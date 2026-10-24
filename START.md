@@ -50,8 +50,8 @@ Then `select * from todo order by priority` and tell them, in one line each, wha
 Profile, one home shelf with two niches, and a second shelf:
 
 ```sql
-insert into profiles (display_name) values ('Angel')
-  on conflict (space_id) do update set display_name = excluded.display_name;
+update profiles set display_name = 'Angel';
+insert into profiles (display_name) select 'Angel' where not exists (select 1 from profiles);
 insert into shelves (slug, name, position, home, blurb, niches) values
   ('founder', 'Founder', 0, true, 'Building a company: people, product, money.',
    '[{"id":"people","label":"People"},{"id":"product","label":"Product"}]'),
