@@ -32,6 +32,24 @@ step 1 in bulk, step 3 with facts and the reader's own fields only (no note; `no
 they have a ranking, no author rows until they ask or own several books by that author, step 11 at the end.
 Hundreds of rows per request, one approval for the whole import. See [IMPORT.md](IMPORT.md).
 
+## Many books at once (10–200)
+
+Don't do one book at a time: 200 lookups and 200 writes take hours, and the reader sees nothing until the end. Don't
+do full adds either. Work in passes, so the library appears in minutes and gets richer after:
+
+1. **One read for all of them.** Every title against `books` (already there → skip) and `book_facts` (ISBN, cover,
+   Kindle id), in one request with `where lower(title) in (…)`.
+2. **Fill only the gaps.** Search the web only for books `book_facts` doesn't have, and only for the facts the row
+   needs: exact title, author, ISBN, cover. Not found → null. Never invent one.
+3. **Show the plan in counts, get one yes.** *"200 books: 12 already here, 188 new, 9 with no ISBN found. First 25,
+   then the rest in two requests."*
+4. **Write in batches.** Quick add rows (title, author, isbn, cover, status, shelf, tags; a note only if you have a real
+   reason for this reader). First 25, give the link, then up to 200 rows per request. Each request is one undo. One
+   bad row fails its whole request, so clean the list first. IMPORT.md has the exact SQL.
+5. **Enrich best first.** Afterwards, a few books per request: notes and scores for the 5–10 that matter most to their
+   goal, a full add for the one or two they're most excited about. The rest on later sessions and scheduled runs
+   ([DAILY.md](DAILY.md)).
+
 ## 0. Know the reader
 
 Every note, angle, score and card is written for *this* reader. Read their goal first:

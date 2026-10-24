@@ -47,5 +47,6 @@ news why, a sharper note, a new book) is better than a big rewrite once a month.
 
 ## Updates to this manual
 
-`/describe` names the commit (`repo_sha`) the server was tested against. If it's newer than your copy, tell the
-reader in one line and offer to read the changes. Don't switch silently.
+The manual is this repo's `main`, and it improves. At the start of every session, reread README (and the file for the
+step you're on) from `main`. Where it differs from your notes or your memory, the manual wins. You never edit this
+repo; it isn't yours or the reader's to change.

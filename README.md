@@ -44,8 +44,7 @@ Any AI that can send HTTPS requests can do this. Nothing here depends on one pro
 
 ## Work
 
-- `GET /describe` — the live shape: tables, columns, rules, examples. Read it at the start of each session. It names
-  this repo and the commit (`repo_sha`) it was tested against.
+- `GET /describe` — the live shape: tables, columns, rules, examples. Read it at the start of each session.
 - `POST /sql` with a plain-text body — one or more statements, one transaction, one change. Results come back as TSV.
 - `GET /history`, `POST /undo` — every request is one change the reader can undo.
 - Errors are one plain-text line. Read it; it usually says the fix. Nothing in a failed request was written.

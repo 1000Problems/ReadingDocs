@@ -1,7 +1,6 @@
 # IMPORT — a reader who arrives with a library
 
-Lines marked **PROPOSED — needs server change** don't work today (see README, *Proposed server changes*). Lines marked
-**Question** are things nobody has checked yet: check them on the first small batch and tell the reader what you saw.
+Lines marked **PROPOSED — needs server change** don't work today (see README, *Proposed server changes*).
 
 Some readers don't arrive with a goal and one book. They arrive with a house full of books: two thousand of them, a
 Goodreads account, maybe a spreadsheet, and bookcases they can photograph. What they want first is not a rich page per
@@ -58,7 +57,7 @@ whether physical position matters to them; if so, that needs a server change.
 | `Date Added` | — | not stored |
 | `My Review` | `why_read`, or nothing | `why_read` **only** if it is his reason for reading it. Otherwise ask whether to keep reviews as his own notes (`notes`, `kind = 'note'`, `source = 'me'`) or leave them out |
 | `Private Notes` | — | leave out unless he asks |
-| `Owned Copies` | — | a hint only: many people never fill it. Ask whether `to-read` books he doesn't own come in at all (Question: there is no "owned" column; a `wishlist` tag is the interim) |
+| `Owned Copies` | — | a hint only: many people never fill it. Ask whether `to-read` books he doesn't own come in at all (there is no "owned" column yet; tag those he doesn't own `wishlist`; default: bring them in) |
 | `Book Id`, `Average Rating`, `Publisher`, `Binding`, `Number of Pages`, `Year Published`, … | — | not stored; `book_facts` and later lookups cover facts |
 
 Never write a rating, review or reason he didn't give. `rating` is his, not yours.
@@ -138,13 +137,20 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **Question:** `finished_at` — "dates fill themselves" for status. Does `status = 'finished'` with a null `finished_at`
-  get today's date? If yes, stop and tell him before writing 1,500 wrong dates.
-- **Question:** two different books with the same title (two "Collected Poems"): `slug` fills from the title; check
-  whether the second one is refused. If it is, set `slug` yourself (`collected-poems-mary-oliver`).
-- **Question:** `tags` is free text and the book page shows tags. Does he mind seeing `import:…` there? If he does,
-  drop the batch tag after the import is checked (a bulk update: ask first).
-- **Question:** `todo` and `hints` after the batch: does a large import add a `todo` item per book?
+- **Finish dates.** Today the server fills `finished_at` with *today* when a book is written as `finished` without a
+  date (and `started_at` for `reading`). For an import that is wrong. Until that changes
+  (**PROPOSED — needs server change**: fill dates only when the status changes later, not on insert), tell him before
+  the import: *"Books you finished without a date will show today's date. I can wait for the fix, or import them
+  now."* Do what he says.
+- **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
+  by different poets both go in (the second gets slug `collected-poems-1`). A row with **no author** matches any book
+  with that title and is refused: give it an author, or its own `slug`. A duplicate **inside one request** fails the
+  whole request: the file must be clean first.
+- **Tags show.** The book page shows every tag, so `import:…` appears on each book. Ask him once: *"OK if each book
+  shows where it came from?"* If not, drop the batch tag after the import is checked (a bulk update: ask first).
+- **`todo` grows.** `todo` asks for an author page for every distinct author on any book, author row or not: a
+  2,000-book import can add ~1,000 items. That is expected, not work to do now. Offer author pages only as in section
+  7. **PROPOSED — needs server change:** ask only for authors with 2+ books, or a book that's rated or being read.
 - Then give him the link (`reading.hadmoney.com/`) and do the rest of the batches.
 
 Re-import (a newer export, a month later): the same insert skips what's there. For changes to books already in the
@@ -224,8 +230,9 @@ select v.title, v.author, v.isbn, (select cover_url from book_facts f where f.is
 returning slug, title;
 ```
 
-**Question:** a book on his shelf that isn't in his export: `status = 'want'` is the default, but he owns it and may
-have read it. Ask him once which status photo-only books get.
+A book on his shelf that isn't in his export: he owns it and may have read it, so `want` can be wrong. Write it as
+`want` with the tag `owned`, and ask him once whether photo-only books should be `finished` instead.
+**PROPOSED — needs server change:** an `owned` flag, separate from reading status.
 
 **Unsure and unreadable spines** stay in the chat list until he answers. Today nothing on the site shows them.
 **PROPOSED — needs server change:** `books.needs_review` (with the import batch), and a page that lists them for him.
@@ -250,5 +257,8 @@ The import gives him the library. The rest comes slowly, best first, and never a
 - **Gaps worth a line:** "You have volumes 1 and 3 of …", "eleven books by Grove, no author page yet".
 
 Scheduled runs do this in small batches ([DAILY.md](DAILY.md), *A large library*).
+
+End the import session with the next step: *"Next: pick how you rank books, and I'll score your rated ones first."*
+Imported books have no rank, so the home page has no real order until then; his ratings are the first signal.
 
 **PROPOSED — needs server change:** check site speed at 2,000+ books: the home page, a shelf, search.
