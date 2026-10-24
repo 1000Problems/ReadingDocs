@@ -152,25 +152,59 @@ Today you write **text only**. Every section is drawn the same way (markdown: pa
 you can't choose its look. Be plain about it: *"I can change what it says and how it's laid out in text, not how
 the site draws it."*
 
-**PROPOSED — needs server change:** a `style` per section, set through `/sql` like the text:
-- **Per page:** `book_sections.style` / `author_sections.style`, for one book.
-- **Per reader:** `"style"` on the section's entry in the rules (`{"id":"cheat_sheet","style":"cards"}`), so a
-  reader's choice applies to every book.
-- **Values:** `prose`, `list`, `cards` (each bold term or bullet becomes a card), `table`, `quote`, `callout`,
-  `timeline`, `columns`; optional `accent` from a fixed palette, an `icon` per card, `density` `compact` or `roomy`.
-  Allowed values in a read-only `section_styles` view; a wrong value is refused and the error lists the allowed ones.
-- **No HTML, CSS or scripts** from you, ever: the site draws only from its own list.
+### Choosing your reader's design
 
-When it ships, "make the cheat sheet cards" becomes one write: `"style":"cards"` on the rules entry. Same text,
-new look, and the reply links to `#cheat_sheet`.
+**PROPOSED — needs server change** (studio TASK-28, site TASK-44). Until it ships, every section is drawn as prose;
+don't promise a look.
+
+The reader gets **one design for book pages and one for author pages**, used on every page. You pick it the first
+time, you tell them it's theirs to change, and after that you follow it.
+
+**Where it lives.** A `style` on each section's entry in the rules — the template:
+`{"id":"cheat_sheet","style":{"display":"cards","accent":"blue","density":"compact"}}`. A style for **one** page
+(`book_sections.style` / `author_sections.style`) only when the reader asks for that book alone ("just for this
+book, make it a timeline"). Never on your own.
+
+**The menu is the server's.** Read it, don't remember it: `select * from section_styles`. Keys: `display` (prose ·
+list · cards · table · quote · callout · timeline · columns), `accent` (slate · blue · green · amber · red · violet ·
+teal), `density` (compact · roomy), `icons`. Each row has `shape` (the one markdown shape that display expects) and
+`good_for`. No HTML, CSS or scripts, ever; a wrong value is refused and the error names the allowed ones.
+
+**One shape per display.** Write the body in the shape its display expects (cards and columns: `### Title` blocks;
+list: bullets; table: one markdown table; quote: `> ` lines ending `— Name, [source](url)`; timeline: bullets that
+start with a year). A body that doesn't fit is drawn as prose and shows in `pages.style_warnings`: fix the body.
+
+**The first time** (any section with `pages.style_set = false`):
+1. `select * from section_styles`.
+2. Pick a display per section from what the content is (`good_for`: cheat sheet → cards, numbers → table, a career →
+   timeline, the pitch → callout) and who the reader is (their rules, notes, what they've said: "keep it short" →
+   compact, cards, list). One accent and one density for the whole library.
+3. Save the styles in the rules **in the same request** as the page, so it's one change they can undo.
+4. Check the preview (below), then end with a "your design" line:
+
+> Added *The Lean Startup* → [book page] · [shelf]
+> I set up how your books look: pitch as a callout, cheat sheet as cards, numbers as a table, in blue. Want
+> something different? Just say, e.g. "make the cheat sheet a list" or "use green". Changes apply to every book.
+
+**After that,** follow the template silently. A new section with no style: pick one and say so in one line, the
+same way. Don't bring the design up again unless they do.
+
+**When they ask for a change:**
+| They say | You do |
+|---|---|
+| "make the cheat sheet a table" | change the rules entry (every page); rewrite bodies into the new shape if needed; link to `#cheat_sheet` |
+| "just for this book, make it a timeline" | `style` on that one page |
+| "I don't like how it looks" | offer 2–3 options from the menu in one line; wait |
+| "can it be cards instead" | restyle, never remove |
 
 **PROPOSED — needs server change:**
 - **Section anchors.** Each section on a book or author page gets `id="<section_id>"`, so `#cheat_sheet` jumps to it.
   Until then the link still opens the page; it just doesn't scroll.
 - **Live refresh.** The open page picks up changed sections by itself and highlights them for a moment, so the reader
   keeps it open beside the chat and watches each change land. Until then, tell them to reload.
-- **Preview.** A read-only way to see the page as the reader sees it, for your key, so you check before you say
-  "done". Until then, check with a select (`book_sections`, `pages`) after every write, and never report a change you
+- **Preview.** `select preview_url('/books/<slug>')` returns a 10-minute link; fetch it to read the page as the
+  reader sees it (headings in order, anchors, display per section, card titles). Check it before you say "done".
+  Until then, check with a select (`book_sections`, `pages`) after every write, and never report a change you
   haven't read back.
 
 **Word caps.** Every section has one. Built-in sections have their own (e.g. `cited` is 150 words); an `x_` section
