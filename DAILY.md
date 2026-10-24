@@ -34,7 +34,8 @@ or when `todo` lists them ([PAGES.md](PAGES.md)). Then:
 For a reader with hundreds or thousands of books ([IMPORT.md](IMPORT.md)), scheduled runs enrich a little each time,
 best first:
 
-1. pages for books they're reading (`todo` `description:`), in their page rules ([PAGES.md](PAGES.md)); then notes and
+1. pages for books they're reading (`todo` `description:`), only in page rules they already shaped ([PAGES.md](PAGES.md);
+   no rules of their own yet → offer it next session instead); then notes and
    scores for books rated 5, then 4;
 2. missing ISBNs, and covers/photos the shared facts still don't have (README, *Covers and author photos*);
 3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist

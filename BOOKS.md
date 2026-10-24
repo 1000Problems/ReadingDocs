@@ -13,10 +13,10 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 1. **Is it already there?** `select slug, title, author from books where title ilike '%…%'`, or `select * from search('…')`.
    Adding the same book twice is refused and the error names the existing slug. Update that one.
 2. **Look it up.** Shared facts first: `select * from book_facts where title ilike '%…%'` (ISBN-13, cover, Kindle ASIN,
-   year). Then the web for what is missing: exact title, author(s), ISBN. Never invent an ISBN. Leave it null. Cover: README,
-   *Covers and author photos*.
+   year). Then the web for what is missing: exact title, author(s), ISBN. Never invent an ISBN. Leave it null.
+   `cover_url` stays empty when `book_facts` has a cover (the site shows it); otherwise README, *Covers and author photos*.
 3. **Shelf and niche.** `select slug, name, niches from shelves`. Pick from what exists. No shelf → the home shelf.
-   A niche must be on the shelf; the error lists the valid ones. To add one:
+   A niche must be on the shelf; the error lists the valid ones. Add a niche only when a book goes into it:
    `update shelves set niches = niches || '[{"id":"validation","label":"Idea and validation","sentence":"…"}]'::jsonb where slug = 'founder';`
 4. **Author.** Full name(s), first author first, co-authors separated by commas. The database gives each author one
    row (and page) the moment the book is written, matched by slug, so **spell an author the same way on every book**:
@@ -36,9 +36,9 @@ shelf covers the same ground), `why_read` (the reader's own reason only, never y
 
 ## After the add
 
-Give the link (`reading.hadmoney.com/books/<slug>`). If the reader has no page rules yet
-(`select source from rules where kind = 'book_description'` says `default`), ask the page question once
-([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line: *"Want its page?"*
+Give the link (`reading.hadmoney.com/books/<slug>`) and offer the page in one line. No page rules of their own yet
+(`select source from rules where kind = 'book_description'` says `default`): *"Want to make this page yours?"*
+([PAGES.md](PAGES.md), *The page conversation*). They have rules: *"Want its page, same as <first book>?"*
 
 ## Exact SQL
 
