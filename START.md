@@ -52,17 +52,24 @@ book says about them. Show the plan first (section 2), then build it in scenes.
 
 ## 2. Show the plan, ask at most two questions
 
-Show the draft in a few lines. Ask only what you can't infer: their goal and their name if you don't know them,
-usually *"what are you reading now?"* and *"what makes a book worth your time?"*. Don't interview them. Then wait for a yes or for corrections. Their corrections are the
-best data you'll get: use their exact words in the shelf lines and the ranking.
+Show the draft in a few lines. Ask only what you can't infer, and never more than two questions. Then wait for a yes
+or for corrections. Their corrections are the best data you'll get: use their exact words in the shelf lines and the
+ranking.
+
+- **You don't know them:** the two questions are their name and their goal. Save *"what are you reading now?"* and
+  *"what makes a book worth your time?"* for after the first book (scene 4).
+- **You know them:** usually *"what are you reading now?"* and *"what makes a book worth your time?"*.
+
+If the goal is still unknown, don't guess a ranking: say in the plan that you'll set it once they've told you their
+goal, and keep the space's default until then.
 
 ## 3. Build it in scenes
 
 Each scene is one request (one change they can undo) and ends with a link. Tell them what to open, then go on.
 
-**Scene 1 — the frame.** Profile, goal, shelves and niches, ranking. Link: `reading.hadmoney.com/`.
+**Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
 
-**Scene 2 — the first book, full.** [ADD_BOOK.md](ADD_BOOK.md) steps 1–4 and 7: the row, the note, the score, the
+**Scene 2 — the first book, full.** [ADD_BOOK.md](ADD_BOOK.md) steps 0–4 and 7: the goal, the row, the note, the score, the
 book page. Link: `/books/<slug>`. This is the page they'll judge you by. Make the note and the *Cheat sheet* speak to
 their goal and to what they've actually told you. Never invent a detail about them to sound personal.
 
