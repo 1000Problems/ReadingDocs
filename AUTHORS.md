@@ -5,9 +5,16 @@ The same steps as [ADD_BOOK.md](ADD_BOOK.md) 5, 6 and 8, for when `todo` asks fo
 what to say about them in the reader's conversations.
 
 ## The row
-- **One author, one page**, however many of their books the reader has. One `authors` row per person. `slug` fills from `name`; keep `name` identical to how `books.author` spells it.
-  That name match is the only link from a book to its author, so every book by them must use the same spelling.
-  Before adding an author, check for a variant: `select name from authors where name ilike '%grove%'`.
+- **One author, one page**, however many of their books the reader has. The database makes the row when a book
+  names the author, and never a second: same person = same slug (case, accents, Dr./Jr. ignored). The site links a
+  book to every author in it the same way. You never insert authors; spell each person the same way on every book.
+- **A library from before the database did this** (books whose authors have no row): one request, safe to re-run:
+  ```sql
+  insert into authors (name)
+  select distinct trim(a) from books, unnest(string_to_array(author, ',')) a where trim(a) <> ''
+  on conflict (slug) do nothing;
+  ```
+  (It splits on commas only: rewrite `&` / `and` between co-authors to commas first.)
 - Facts (`wiki_url`, `photo_url`, `born`, `pronunciation`) only from a page you opened. Fill when empty or wrong;
   never overwrite with a guess. `author_facts.wikipedia` / `site` may already have them.
 - `hook`: one line to remember them by.
@@ -22,7 +29,7 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 ## News
 1. Read first: `select url, headline, kind, published_on from author_articles where author_slug = '<slug>'`
    and `select * from news where author = '<slug>'`.
-2. Search the web (last 12 months) only if `todo` lists `author_check:<slug>`.
+2. Search the web (last 12 months) only if `todo` lists `author_check:<slug>`. It does only for authors with a page.
 3. Store finds in `author_news` (`on conflict (url) do nothing`). `author_id` is the main author; `news_authors` adds the
    others, `news_books` the books it's about. Then
    `update authors set news_checked_at = now()`. Private to this reader; the weekly job never reads it.

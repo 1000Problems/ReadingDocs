@@ -13,7 +13,7 @@ commons job found it for everyone.
   recent (30 days) and the job hasn't looked this week.
 - When you do search: add an `authors` row if the author has none, insert what you find into `author_news`, then set
   `news_checked_at`. It stays private to this reader. The job never reads it.
-- `todo` lists `author_check` when the author has nothing from the last 30 days, you haven't checked in 30 days, and
+- `todo` lists `author_check` when the author has a page, nothing from the last 30 days, you haven't checked in 30 days, and
   the job hasn't checked in 7. Search the last 12 months.
 - Book facts by ISBN: `select * from book_facts where isbn13 = '9780307887894'`.
 

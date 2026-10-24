@@ -90,7 +90,7 @@ it lives in one place: the `note` of the `book_note` rule. Read it before writin
 
 Not available yet. Docs mark the steps they would change **PROPOSED**. In priority order:
 
-1. `book_authors (book_id, author_id, position)` — a book points at its authors by id. Today it is a name match.
+1. `book_authors (book_id, author_id, position)` — a book points at its authors by id. Today the database makes one author row per name it finds in `books.author` (by slug), so spelling still decides who is who.
 2. `profiles.purpose` — one home for the reader's goal.
    Also: copy `shelves.sentence` ↔ `blurb` when one is empty, so the AI writes one line once.
 3. Custom book-page sections (e.g. any heading prefixed `x_`), so a page can have *Where it breaks now* or *Questions

@@ -51,7 +51,7 @@ whether physical position matters to them; if so, that needs a server change.
 | `ISBN13` | `isbn` | strip the `=""` wrapper (`="9780307887894"` → `9780307887894`); empty → null |
 | `ISBN` | `isbn` | only when `ISBN13` is empty; same wrapper |
 | `My Rating` | `rating` | 1–5; **0 means unrated → null** |
-| `Exclusive Shelf` | `status` | `currently-reading` → `reading`; everything else (`read`, `to-read`, any other shelf) → `want`. **Never import a book as `finished`**: he marks books finished himself on the site |
+| `Exclusive Shelf` | `status` | `read` → `finished`, `currently-reading` → `reading`, `to-read` → `want`; any other exclusive shelf (e.g. `did-not-finish`) → ask him (`abandoned` is the likely one). No dates (`Date Read` is not imported) |
 | `Bookshelves` | `tags` | his custom shelves, lowercase, comma-split; leave out the three exclusive shelf names |
 | `Date Read` | — | **not imported.** Goodreads dates are often missing or wrong; the import never sets a finish date |
 | `Date Added` | — | not stored |
@@ -69,8 +69,10 @@ Before writing, clean the file on your side:
 - **One spelling per author.** Each author gets one author page, shared by every book of theirs, and books find it
   by exact name. "Andrew Grove", "Andrew S. Grove" and "Grove, Andrew" would make three pages. Before writing, list
   every author name in the file, group the variants (case, initials, "Last, First", accents), pick one spelling per
-  person (the one in `author_facts` or `authors` if it's there, else the fullest), and rewrite every row to it.
-  Commas separate authors, so a name must not contain one: "Martin Luther King, Jr." becomes "Martin Luther King Jr.". Show
+  person, and rewrite every row to it. Prefer the spelling already in `authors`, then `author_facts` (its `aliases`
+  list says which spellings are the same person: `select slug, name, aliases from author_facts where name ilike '%grove%'`),
+  else the fullest. Separate co-authors with commas only ("Steve Blank & Bob Dorf" → "Steve Blank, Bob Dorf"), and
+  never put a comma inside one name ("Martin Luther King, Jr." → "Martin Luther King Jr."). Show
   him only the groups you weren't sure of. After the import, check:
   ```sql
   select split_part(author, ',', 1) as author, count(*) from books group by 1 order by 1;
@@ -94,26 +96,17 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   request fails on size, halve it.
 - **Quick add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
   tags, shelf (no dates). **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
-  when you write one. No score until he has a ranking. Authors go in right after the books, once each (below). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
-- **Authors, once each.** Every author of every book gets an author row, and later an author page. An author with
-  twelve books gets **one** row, shared by all twelve. After the book batches (spellings already unified, section 2),
-  one request adds every author name not already there, co-authors included:
+  when you write one. No score until he has a ranking. Authors come with the books (below). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
+- **Authors come with the books.** The database gives every author of every book an author row the moment the book
+  is written, and never a second one: an author with twelve books has **one** row and one page, shared by all twelve.
+  Same author = same slug (case, accents, Dr./Jr. ignored), the same rule the site uses to link books to author pages.
+  A book by `'Steve Blank, Bob Dorf'` shows on both pages. You don't insert authors; you make sure each person has one
+  spelling (section 2), because "Andrew Grove" and "Andrew S. Grove" are still two slugs. Count authors in the plan he
+  approves (*"1,412 books by 903 authors"*). Check after each batch:
   ```sql
-  insert into authors (name)
-  select distinct trim(a) from books, unnest(string_to_array(author, ',')) a
-   where trim(a) <> ''
-     and not exists (select 1 from authors x where lower(x.name) = lower(trim(a)));
+  select count(*) from authors;
+  select a.slug, a.name from authors a where a.name ilike '%grove%';  -- spot-check a variant you merged
   ```
-  The `not exists` matters: a second row for the same name gets its own slug (`andrew-s-grove-1`) and a second, empty
-  page. Re-running it is safe. Count authors in the plan he approves (*"1,412 books by 903 authors"*). Check:
-  ```sql
-  select lower(name), count(*) from authors group by 1 having count(*) > 1;  -- must be empty
-  select count(*) from books b where not exists
-    (select 1 from authors a where a.name = trim(split_part(b.author, ',', 1)));  -- books whose author has no row: 0
-  ```
-  **Question:** a book with two authors (`'Steve Blank, Bob Dorf'`): does the site link it to both author pages, or
-  only an exact match on the whole string? Until `book_authors` lands (README), check one on the site after the first
-  batch.
 - **A batch tag.** Every row of one import gets the same tag, e.g. `import:goodreads-2026-10-24`, so the batch can be
   found, checked and talked about later.
   **PROPOSED — needs server change:** `books.import_batch` and `books.needs_review`, so batches and doubtful rows don't
@@ -139,7 +132,7 @@ select v.title, v.author, v.isbn,
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
        v.status, v.rating, v.tags, 'books'
   from (values
-    ('The Lean Startup', 'Eric Ries', '9780307887894', 'want', 4::smallint,
+    ('The Lean Startup', 'Eric Ries', '9780307887894', 'finished', 4::smallint,
      '{business,import:goodreads-2026-10-24}'::text[]),
     ('The Startup Owner''s Manual', 'Steve Blank, Bob Dorf', null::text, 'want', null::smallint,
      '{business,import:goodreads-2026-10-24}'::text[])
@@ -164,9 +157,8 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **Nothing imported as finished.** Read books come in as `want`; he marks them finished himself. The import never
-  writes `finished_at` or `started_at`, and the server leaves them empty on insert; they fill with today only when he
-  changes a status later.
+- **No dates.** `read` books come in as `finished`, with no finish date: the import never writes `finished_at` or
+  `started_at`, and the server leaves them empty on insert. They fill with today only when a status changes later.
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
   by different poets both go in (the second gets slug `collected-poems-1`). **Every row needs its author**: a row with
   none matches any book with that title and is refused. Find the author first (export, `book_facts`, a source you
@@ -257,11 +249,9 @@ select v.title, v.author, v.isbn, (select cover_url from book_facts f where f.is
 returning slug, title;
 ```
 
-A book on his shelf that isn't in his export goes in as `want` like every import; he sets the status himself.
+A book on his shelf that isn't in his export: he owns it and may have read it. Write it as `want` with the tag
+`owned`, and ask him once whether photo-only books should be `finished` instead.
 **PROPOSED — needs server change:** an `owned` flag, separate from reading status.
-
-After the insert, run the *Authors, once each* request from section 4 in the same session, so new authors from the
-photo get their row too.
 
 **Unsure and unreadable spines** stay in the chat list until he answers. Today nothing on the site shows them.
 **PROPOSED — needs server change:** `books.needs_review` (with the import batch), and a page that lists them for him.

@@ -175,32 +175,34 @@ select slug, rank, rank_why from books where slug = 'the-lean-startup';
 
 ## 5. The author row
 
-One row per author; `slug` fills from `name`. The book reaches its author by name: keep `authors.name` identical to
-the name in `books.author` (`Eric Ries` → `eric-ries`). There is no `author_id` on books. Fill facts only from a
-source you opened: `wiki_url`, `photo_url`, `born`, `pronunciation`. `hook` is one line to remember them by.
+The row already exists: the database makes one `authors` row per author when the book is written (step 3), and never
+a second for the same person. Same person = same slug (`Eric Ries` → `eric-ries`; case, accents, Dr./Jr. ignored).
+Co-authors (`'Steve Blank, Bob Dorf'`, or with `&`, `and`) each get their own row and page. Your job is the facts, only
+from a source you opened: `wiki_url` (already filled when the shared facts have it), `photo_url`, `born`,
+`pronunciation`, and `hook`, one line to remember them by.
 
 ```sql
-insert into authors (name, wiki_url, photo_url, born, hook)
-values ('Eric Ries', '…url you opened…', '…url you opened…', '…', '…one line…')
-on conflict (slug) do update set
-  wiki_url = coalesce(authors.wiki_url, excluded.wiki_url),
-  photo_url = coalesce(authors.photo_url, excluded.photo_url),
-  born = coalesce(authors.born, excluded.born),
-  hook = coalesce(authors.hook, excluded.hook)
+update authors set
+  wiki_url  = coalesce(wiki_url, '…url you opened…'),
+  photo_url = coalesce(photo_url, '…url you opened…'),
+  born      = coalesce(born, '…'),
+  hook      = coalesce(hook, '…one line…')
+ where slug = 'eric-ries'
 returning id, slug;
 select author, headline, published_on, mine, shared from news where author = 'eric-ries';
 ```
 
-Once the row exists, the shared articles show up in `news` for this reader (`shared = true`). You don't copy them.
+No row came back? The book's author is spelled differently from what you expected: `select slug, name from authors
+where name ilike '%ries%'`.
 
-Multiple authors: one `authors` row each.
+Once the row exists, the shared articles show up in `news` for this reader (`shared = true`). You don't copy them.
 
 **PROPOSED — needs server change:** a `book_authors (book_id, author_id, position)` link, so a book points at its
 authors by id instead of by matching names.
 
 ## 6. Search the web, store what you find (only if needed)
 
-Search only when `todo` lists `author_check:<slug>`. It does when the author has nothing from the last 30 days, you
+Search only when `todo` lists `author_check:<slug>`. It does when the author has a page (step 8), nothing from the last 30 days, you
 haven't checked in 30 days, and the shared job hasn't checked this week ([COMMONS.md](COMMONS.md)). Search the last 12
 months. Store real finds privately; they stay this reader's. Link each item to the author and to the book it is
 about. `author_id` is the main author; `news_authors` adds the others (a joint interview). One request:

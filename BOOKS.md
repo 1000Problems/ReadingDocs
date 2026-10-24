@@ -14,8 +14,9 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 3. **Shelf and niche.** `select slug, name, niches from shelves`. Pick from what exists. No shelf → the home shelf.
    A niche must be on the shelf; the error lists the valid ones. To add one:
    `update shelves set niches = niches || '[{"id":"validation","label":"Idea and validation","sentence":"…"}]'::jsonb where slug = 'founder';`
-4. **Author.** Full name(s), first author first. **Write `books.author` exactly as `authors.name`**: that name match is
-   the only link from a book to its author page. Check: `select name from authors where name ilike '%ries%'`.
+4. **Author.** Full name(s), first author first, co-authors separated by commas. The database gives each author one
+   row (and page) the moment the book is written, matched by slug, so **spell an author the same way on every book**:
+   "Andrew Grove" and "Andrew S. Grove" are two people to it. Check first: `select slug, name from authors where name ilike '%grove%'`.
 5. **The short note** (`note`): one paragraph, why *this* book for *this* reader, from their goal and what you know
    of them. A note that would fit anyone is wrong. Personal details only from what they told you or what's in your
    memory of them; if you have none, write to their goal. Never invent a detail to sound personal. Rules: `select rules from rules where kind = 'book_note'` (default 40–90 words, plain prose, no invented
