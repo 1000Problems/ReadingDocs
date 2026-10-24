@@ -131,11 +131,47 @@ after. Their space is private and every change can be undone, so writing first i
    > *Cheat sheet now speaks to investors: what they'll ask about your MVP and pivot line, and the trap in each.
    > reading.hadmoney.com/books/the-lean-startup#cheat_sheet*
 
+   Every reply that reports a change ends with its link, every time, not only the first. Link only where something
+   changed: a section change links to that section, never to `/review` or the home page as well (README, *A link
+   with every change*).
+
+**Restyle, never remove.** When the reader asks to change how a section *looks* ("make it cards", "I don't like the
+format", "can it be a table"), keep the section and change its form. Remove a section only when they say remove,
+drop, delete or "take it out". Taking a section out of the rules because they disliked its look loses what they
+wanted to keep.
+
+- **Vague complaint** ("I don't like the format"): offer two or three concrete forms in one line and let them pick:
+  *"One plain line per term, a short table, or questions to quiz yourself?"*
+- **A form the site can't draw yet** ("cards"): say so in one line, offer the nearest text form (one bold term per
+  line, short blocks), and don't remove or move anything. Drill cards (step 10) are a separate thing on `/review`;
+  make them only when the reader asks for drill cards, not in place of a section.
+
+## How a section looks
+
+Today you write **text only**. Every section is drawn the same way (markdown: paragraphs, bullets, bold, links), and
+you can't choose its look. Be plain about it: *"I can change what it says and how it's laid out in text, not how
+the site draws it."*
+
+**PROPOSED — needs server change:** a `style` per section, set through `/sql` like the text:
+- **Per page:** `book_sections.style` / `author_sections.style`, for one book.
+- **Per reader:** `"style"` on the section's entry in the rules (`{"id":"cheat_sheet","style":"cards"}`), so a
+  reader's choice applies to every book.
+- **Values:** `prose`, `list`, `cards` (each bold term or bullet becomes a card), `table`, `quote`, `callout`,
+  `timeline`, `columns`; optional `accent` from a fixed palette, an `icon` per card, `density` `compact` or `roomy`.
+  Allowed values in a read-only `section_styles` view; a wrong value is refused and the error lists the allowed ones.
+- **No HTML, CSS or scripts** from you, ever: the site draws only from its own list.
+
+When it ships, "make the cheat sheet cards" becomes one write: `"style":"cards"` on the rules entry. Same text,
+new look, and the reply links to `#cheat_sheet`.
+
 **PROPOSED — needs server change:**
 - **Section anchors.** Each section on a book or author page gets `id="<section_id>"`, so `#cheat_sheet` jumps to it.
   Until then the link still opens the page; it just doesn't scroll.
 - **Live refresh.** The open page picks up changed sections by itself and highlights them for a moment, so the reader
   keeps it open beside the chat and watches each change land. Until then, tell them to reload.
+- **Preview.** A read-only way to see the page as the reader sees it, for your key, so you check before you say
+  "done". Until then, check with a select (`book_sections`, `pages`) after every write, and never report a change you
+  haven't read back.
 
 **Word caps.** Every section has one. Built-in sections have their own (e.g. `cited` is 150 words); an `x_` section
 uses its `max_words`. The server counts words by whitespace, **link URLs included**, so a markdown link costs words
@@ -380,11 +416,38 @@ select section_id, title, position from book_sections where book_slug = 'the-lea
 select sections, missing from pages where kind = 'book' and slug = 'the-lean-startup';
 ```
 
-Remove a section: `delete from book_sections where book_slug = '…' and section_id = '…'`.
+Remove a section (only when the reader says remove: *Write, then shape*, **Restyle, never remove**):
+`delete from book_sections where book_slug = '…' and section_id = '…'`.
 
-**After a rules change** ("add critiques to my book pages"): rewriting any section rebuilds the page in the new
-rules, and sections no longer in the rules are dropped (undo brings them back). Find what to offer filling:
-`select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
+**After a rules change** ("add critiques to my book pages"): new sections show up as `missing` in `pages`. Find what
+to offer filling: `select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
+
+**A section dropped from the rules stays on the page.** Taking an id out of the rules does not remove its text
+today: the row stays (`book_sections` shows it with `section_id` null) and the site keeps showing it. And the server
+refuses to delete a section that isn't in the rules. So when the reader says to drop a section everywhere, do it in
+**one request**: add the id back to the rules, delete the section on every page that has it, then save the rules
+without it.
+
+```sql
+-- 1. the rules with the id back in (the rules as they are, plus the section)
+insert into templates (kind, rules)
+select kind, jsonb_set(rules, '{sections}', (rules -> 'sections') || '[{"id":"core_ideas"}]'::jsonb)
+  from rules where kind = 'book_description'
+on conflict (kind) do update set rules = excluded.rules;
+-- 2. delete the text
+delete from book_sections where section_id = 'core_ideas';
+-- 3. the rules without it
+insert into templates (kind, rules)
+select kind, jsonb_set(rules, '{sections}',
+       (select coalesce(jsonb_agg(s), '[]'::jsonb) from jsonb_array_elements(rules -> 'sections') s
+         where s ->> 'id' <> 'core_ideas'))
+  from rules where kind = 'book_description'
+on conflict (kind) do update set rules = excluded.rules;
+select section_id, title from book_sections where book_slug = 'the-lean-startup' order by position;
+```
+
+Check the last select: the dropped section must be gone before you tell the reader. **PROPOSED — needs server
+change:** dropping a section from the rules hides (or deletes) its rows, so step 3 alone is enough.
 
 ## 8. The author page
 
