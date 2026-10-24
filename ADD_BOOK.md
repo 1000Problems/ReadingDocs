@@ -17,7 +17,7 @@ the error is one line and usually names the fix; nothing in that step was writte
 | 3 | The book row | always |
 | 4 | Score it | always once a ranking exists |
 | 5 | The author row | always |
-| 6 | Search the web, store what you find | only if `todo` lists `author_check` |
+| 6 | Search the web, store what you find | a new author (no page yet): always; after that, only if `todo` lists `author_check` |
 | 7 | The book page (full description) | full add, or on request |
 | 8 | The author page | full add, or on request |
 | 9 | The playbook: link it to the shelf | links: full add, when the niche has 2+ authors; story: when `todo` lists `story:` |
@@ -132,7 +132,7 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 
 | Column | What |
 |---|---|
-| `title`, `author` | exact; `author` is the full name(s), first author first. **Spell it exactly as `authors.name`**: that name match is the only link to the author page (step 5) |
+| `title`, `author` | exact; `author` is the full name(s), first author first. Spell each author the same way on every book: the database matches authors by slug (step 5) |
 | `isbn`, `kindle_asin` | from `book_facts`, else from the web, else null |
 | `cover_url` | empty when `book_facts` has a cover (the site shows it); else Open Library now, else empty (README, *Covers and author photos*) |
 | `shelf`, `niche` | from step 2 |
@@ -203,9 +203,11 @@ authors by id instead of by matching names.
 
 ## 6. Search the web, store what you find (only if needed)
 
-Search only when `todo` lists `author_check:<slug>`. It does when the author has a page (step 8), nothing from the last 30 days, you
-haven't checked in 30 days, and the shared job hasn't checked this week ([COMMONS.md](COMMONS.md)). Search the last 12
-months. Store real finds privately; they stay this reader's. Link each item to the author and to the book it is
+**A new author always gets a fresh search** before their first page (step 8): the page should start from what's
+current, not only from the shared articles. New = no page yet (`summary is null`) and never checked by you
+(`news_checked_at is null`). After that, search only when `todo` lists `author_check:<slug>`. It does when the author
+has a page, nothing from the last 30 days, you haven't checked in 30 days, and the shared job hasn't checked this week
+([COMMONS.md](COMMONS.md)). Search the last 12 months. Store real finds privately; they stay this reader's. Link each item to the author and to the book it is
 about. `author_id` is the main author; `news_authors` adds the others (a joint interview). One request:
 
 ```sql

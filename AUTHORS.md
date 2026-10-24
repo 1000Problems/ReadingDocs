@@ -8,6 +8,9 @@ what to say about them in the reader's conversations.
 - **One author, one page**, however many of their books the reader has. The database makes the row when a book
   names the author, and never a second: same person = same slug (case, accents, Dr./Jr. ignored). The site links a
   book to every author in it the same way. You never insert authors; spell each person the same way on every book.
+- **Two people, one name.** Same slug means one page, so two different John Smiths would share it. When you know they
+  are different people, spell the second one the way their books or Wikipedia tell them apart (a middle initial or
+  full middle name) on every one of their books. Not sure they're different? Ask the reader.
 - **A library from before the database did this** (books whose authors have no row): one request, safe to re-run:
   ```sql
   insert into authors (name)
@@ -30,7 +33,8 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 ## News
 1. Read first: `select url, headline, kind, published_on from author_articles where author_slug = '<slug>'`
    and `select * from news where author = '<slug>'`.
-2. Search the web (last 12 months) only if `todo` lists `author_check:<slug>`. It does only for authors with a page.
+2. Search the web (last 12 months) **always before an author's first page** (no `summary`, no `news_checked_at`).
+   After that, only if `todo` lists `author_check:<slug>`. It does only for authors with a page.
 3. Store finds in `author_news` (`on conflict (url) do nothing`). `author_id` is the main author; `news_authors` adds the
    others, `news_books` the books it's about. Then
    `update authors set news_checked_at = now()`. Private to this reader; the weekly job never reads it.

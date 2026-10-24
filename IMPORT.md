@@ -51,7 +51,7 @@ whether physical position matters to them; if so, that needs a server change.
 | `ISBN13` | `isbn` | strip the `=""` wrapper (`="9780307887894"` → `9780307887894`); empty → null |
 | `ISBN` | `isbn` | only when `ISBN13` is empty; same wrapper |
 | `My Rating` | `rating` | 1–5; **0 means unrated → null** |
-| `Exclusive Shelf` | `status` | `read` → `finished`, `currently-reading` → `reading`, `to-read` → `want`; any other exclusive shelf (e.g. `did-not-finish`) → ask him (`abandoned` is the likely one). No dates (`Date Read` is not imported) |
+| `Exclusive Shelf` | `status` | `currently-reading` → `reading`; everything else (`read`, `to-read`, any other shelf) → `want`. **Never import a book as `finished`**: he marks books finished himself on the site. No dates (`Date Read` is not imported) |
 | `Bookshelves` | `tags` | his custom shelves, lowercase, comma-split; leave out the three exclusive shelf names |
 | `Date Read` | — | **not imported.** Goodreads dates are often missing or wrong; the import never sets a finish date |
 | `Date Added` | — | not stored |
@@ -71,7 +71,8 @@ Before writing, clean the file on your side:
   every author name in the file, group the variants (case, initials, "Last, First", accents), pick one spelling per
   person, and rewrite every row to it. Prefer the spelling already in `authors`, then `author_facts` (its `aliases`
   list says which spellings are the same person: `select slug, name, aliases from author_facts where name ilike '%grove%'`),
-  else the fullest. Separate co-authors with commas only ("Steve Blank & Bob Dorf" → "Steve Blank, Bob Dorf"), and
+  else the fullest. Two different people with the same name share one slug and one page: tell them apart as
+  [AUTHORS.md](AUTHORS.md) says (*Two people, one name*). Separate co-authors with commas only ("Steve Blank & Bob Dorf" → "Steve Blank, Bob Dorf"), and
   never put a comma inside one name ("Martin Luther King, Jr." → "Martin Luther King Jr."). Show
   him only the groups you weren't sure of. After the import, check:
   ```sql
@@ -131,7 +132,7 @@ select v.title, v.author, v.isbn,
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
        v.status, v.rating, v.tags, 'books'
   from (values
-    ('The Lean Startup', 'Eric Ries', '9780307887894', 'finished', 4::smallint,
+    ('The Lean Startup', 'Eric Ries', '9780307887894', 'want', 4::smallint,
      '{business,import:goodreads-2026-10-24}'::text[]),
     ('The Startup Owner''s Manual', 'Steve Blank, Bob Dorf', null::text, 'want', null::smallint,
      '{business,import:goodreads-2026-10-24}'::text[])
@@ -156,8 +157,9 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **No dates.** `read` books come in as `finished`, with no finish date: the import never writes `finished_at` or
-  `started_at`, and the server leaves them empty on insert. They fill with today only when a status changes later.
+- **Nothing imported as finished, no dates.** `read` books come in as `want`; he marks them finished himself. The
+  import never writes `finished_at` or `started_at`, and the server leaves them empty on insert. They fill with today
+  only when he changes a status later.
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
   by different poets both go in (the second gets slug `collected-poems-1`). **Every row needs its author**: a row with
   none matches any book with that title and is refused. Find the author first (export, `book_facts`, a source you
@@ -248,9 +250,8 @@ select v.title, v.author, v.isbn,
 returning slug, title;
 ```
 
-A book on his shelf that isn't in his export: he owns it and may have read it. Write it as `want` with the tag
-`owned`, and ask him once whether photo-only books should be `finished` instead.
-**PROPOSED — needs server change:** an `owned` flag, separate from reading status.
+A book on his shelf that isn't in his export goes in as `want` like every import, with no extra tag; he sets the
+status himself.
 
 **Unsure and unreadable spines** stay in the chat list until he answers. Today nothing on the site shows them.
 **PROPOSED — needs server change:** `books.needs_review` (with the import batch), and a page that lists them for him.

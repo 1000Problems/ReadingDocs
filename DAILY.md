@@ -37,8 +37,8 @@ best first:
 3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist
    with the books (the database makes one per author); never add a second row for an author who has one.
 
-Keep each unattended run to 5 rows or fewer (SAFETY: bulk changes need a yes). If the reader gives a standing yes
-("fill up to 25 covers a run"), follow it and say so in the run's summary. Never change shelves, statuses, ratings or
+Keep each unattended run to 20 rows or fewer: that's the reader's standing limit for scheduled runs (in a session
+with them, still ask before more than 5). Say in the run's summary what you changed. Never change shelves, statuses, ratings or
 their own words on an unattended run.
 
 ## Keep it alive

@@ -9,8 +9,9 @@ ranks, shelves, your author page, why a news item matters to you) never go there
 Read news from one view: `news`. One row per URL: `mine` = you added it (only this reader sees it), `shared` = the
 commons job found it for everyone.
 
-- Don't search the web for an author's news unless `todo` lists `author_check` for them. It does only when nothing is
-  recent (30 days) and the job hasn't looked this week.
+- A new author (no page yet, never checked by you) gets a fresh search before their first page. After that, don't
+  search unless `todo` lists `author_check` for them. It does only when nothing is recent (30 days) and the job hasn't
+  looked this week.
 - When you do search: add an `authors` row if the author has none, insert what you find into `author_news`, then set
   `news_checked_at`. It stays private to this reader. The job never reads it.
 - `todo` lists `author_check` when the author has a page, nothing from the last 30 days, you haven't checked in 30 days, and
