@@ -16,7 +16,7 @@ The example reader is Sam, who owns about 2,000 books and has kept a Goodreads a
   guessed.
 - **Nothing twice.** He can send the same photo or the same export again and nothing doubles.
 - **It keeps getting better.** Over the following weeks, scheduled runs fill in covers, notes and author pages for the
-  books he rates highest and the authors he owns most ([DAILY.md](DAILY.md)).
+  books he rates highest, and an author page for every author, the ones he owns most first ([DAILY.md](DAILY.md)).
 
 Books show in rank order, as for every reader. Where a book sits at home is not recorded. Later, ask the reader
 whether physical position matters to them; if so, that needs a server change.
@@ -93,8 +93,26 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   request fails on size, halve it.
 - **Quick add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
   tags, dates, shelf. **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
-  when you write one. No score until he has a ranking. No author rows yet (each new author row can add work to `todo`;
-  see section 7). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
+  when you write one. No score until he has a ranking. Authors go in right after the books, once each (below). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
+- **Authors, once each.** Every author of every book gets an author row, and later an author page. An author with
+  twelve books gets **one** row, shared by all twelve. After the book batches (spellings already unified, section 2),
+  one request adds every author name not already there, co-authors included:
+  ```sql
+  insert into authors (name)
+  select distinct trim(a) from books, unnest(string_to_array(author, ',')) a
+   where trim(a) <> ''
+     and not exists (select 1 from authors x where lower(x.name) = lower(trim(a)));
+  ```
+  The `not exists` matters: a second row for the same name gets its own slug (`andrew-s-grove-1`) and a second, empty
+  page. Re-running it is safe. Count authors in the plan he approves (*"1,412 books by 903 authors"*). Check:
+  ```sql
+  select lower(name), count(*) from authors group by 1 having count(*) > 1;  -- must be empty
+  select count(*) from books b where not exists
+    (select 1 from authors a where a.name = trim(split_part(b.author, ',', 1)));  -- books whose author has no row: 0
+  ```
+  **Question:** a book with two authors (`'Steve Blank, Bob Dorf'`): does the site link it to both author pages, or
+  only an exact match on the whole string? Until `book_authors` lands (README), check one on the site after the first
+  batch.
 - **A batch tag.** Every row of one import gets the same tag, e.g. `import:goodreads-2026-10-24`, so the batch can be
   found, checked and talked about later.
   **PROPOSED — needs server change:** `books.import_batch` and `books.needs_review`, so batches and doubtful rows don't
@@ -154,9 +172,10 @@ Look for:
   the file must be clean first.
 - **Tags show.** The book page shows every tag, so `import:…` appears on each book. Ask him once: *"OK if each book
   shows where it came from?"* If not, drop the batch tag after the import is checked (a bulk update: ask first).
-- **`todo` grows.** `todo` asks for an author page for every distinct author on any book, author row or not: a
-  2,000-book import can add ~1,000 items. That is expected, not work to do now. Offer author pages only as in section
-  7. **PROPOSED — needs server change:** ask only for authors with 2+ books, or a book that's rated or being read.
+- **`todo` grows, once per author.** `todo` asks for one author page per distinct author, not per book: a
+  2,000-book import by ~900 authors means ~900 items. That's the right work, done over time (section 7), not now. If
+  `todo` shows the same author twice, the spellings weren't unified: fix the book rows, don't write two pages.
+  **PROPOSED — needs server change:** group them in `todo` ("900 authors need a page") so the list stays readable.
 - Then give him the link (`reading.hadmoney.com/`) and do the rest of the batches.
 
 Re-import (a newer export, a month later): the same insert skips what's there. For changes to books already in the
@@ -250,12 +269,15 @@ The import gives him the library. The rest comes slowly, best first, and never a
 - **On request:** "tell me about this one" → a full add for that book ([ADD_BOOK.md](ADD_BOOK.md)).
 - **Rich pages** (note, score, book page) only for books he rated 5 (then 4), the ones he's reading, or the ones he
   asks about.
-- **Author pages** for the authors he owns most:
+- **Author pages for every author**, one page each however many books he owns, most-owned first, then authors of
+  books he's reading or rated, then the rest:
   ```sql
-  select split_part(author, ',', 1) as author, count(*) from books
-   group by 1 having count(*) >= 5 order by 2 desc;
+  select a.slug, a.name, count(b.id) as books from authors a
+    join books b on a.name = any(string_to_array(regexp_replace(b.author, ',\s*', ',', 'g'), ','))
+   where a.summary is null group by 1, 2 order by 3 desc;
   ```
-  Offer the top few; add their author rows only then, since a new author row can bring `author_check` work to `todo`.
+  Each page follows [AUTHORS.md](AUTHORS.md) (shared facts and articles first). At 900 authors this takes weeks;
+  that's fine.
 - **Covers and ISBNs** missing after the import: from `book_facts`, else a source you opened (Open Library returns a
   cover only when it has one if you ask with `?default=false`, e.g.
   `https://covers.openlibrary.org/b/isbn/9780307887894-M.jpg?default=false`; a 404 means none, leave it null).

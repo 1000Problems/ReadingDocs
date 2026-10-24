@@ -34,7 +34,8 @@ best first:
 
 1. books they're reading, then rated 5, then rated 4: a note and a score;
 2. missing covers and ISBNs, from `book_facts` or a source you opened;
-3. authors they own five or more books by: offer the author page (don't add author rows unattended).
+3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist
+   from the import; never add a second row for an author who has one.
 
 Keep each unattended run to 5 rows or fewer (SAFETY: bulk changes need a yes). If the reader gives a standing yes
 ("fill up to 25 covers a run"), follow it and say so in the run's summary. Never change shelves, statuses, ratings or
