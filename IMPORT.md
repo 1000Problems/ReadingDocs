@@ -145,11 +145,8 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **No finish dates.** The import never writes `finished_at` or `started_at`. But today the server fills them with
-  *today* when a book is written as `finished` (or `reading`) without one, which is wrong for an import.
-  **PROPOSED — needs server change:** fill dates only when the status changes later, not on insert. Until it ships,
-  tell him before the import: *"Finished books will show today's date until a fix lands. Import now, or wait?"* Do what
-  he says.
+- **No finish dates.** The import never writes `finished_at` or `started_at`, and the server leaves them empty on
+  insert. They fill with today only when a status changes later ("I just finished it").
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
   by different poets both go in (the second gets slug `collected-poems-1`). A row with **no author** matches any book
   with that title and is refused: give it an author, or its own `slug`. A duplicate **inside one request** fails the
