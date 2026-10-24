@@ -11,14 +11,19 @@ This repo is Markdown only. If you are an AI: read it in this order.
 
 ## Connect (once)
 
-1. The user signs up at https://db.byoaistudio.com and copies the connect code from `/space` (6 characters, 10 minutes, one use).
-2. You call:
+The user makes the account themselves, in their browser at https://db.byoaistudio.com. You never see or need
+their password. They give you a short prompt with a connect code (6 characters, 10 minutes, one use).
+
+1. Call:
    ```
    curl -s -X POST https://db.byoaistudio.com/connect \
-     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Claude"}'
+     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Reading"}'
    ```
-   Line 1 is your key (`byoai_…`). Keep it. The rest is `/describe`.
-3. Every later request: `Authorization: Bearer <key>`.
+   Line 1 is your key (`byoai_…`). Keep it where only you can read it. The rest is `/describe`.
+2. Every later request: `Authorization: Bearer <key>`.
+3. Then go to [START.md](START.md). Don't add books before the user has seen your plan.
+
+Any AI that can send HTTPS requests can do this. Nothing here depends on one product.
 
 ## Work
 
