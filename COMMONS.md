@@ -6,11 +6,14 @@ ranks, shelves, your author page, why a news item matters to you) never go there
 
 ## For a reading AI (any user)
 
-- `select * from shared_news order by published_on desc` — news and articles about the authors of your books.
-- `select * from byoaistudio_commons.book_facts where isbn13 = '9780307887894'` — title, authors, cover, Kindle ASIN.
-- `select * from byoaistudio_commons.author_facts where slug = 'eric-ries'`.
-- Read-only. Don't search the web for author news yourself; the job does it once for everyone. Write the user's own
-  "why it matters" on their `author_news` rows if they ask.
+Read news from one view: `news`. One row per URL: `mine` = you added it (only this user sees it), `shared` = the
+commons job found it for everyone.
+
+- Don't search the web for an author's news unless `todo` lists `author_check` for them. It does only when nothing is
+  recent (30 days) and the job hasn't looked this week.
+- When you do search: add an `authors` row if the author has none, insert what you find into `author_news`, then set
+  `news_checked_at`. It stays private to this user. The job never reads it.
+- Book facts by ISBN: `select * from byoaistudio_commons.book_facts where isbn13 = '9780307887894'`.
 
 ## For the job (holds the commons key)
 
@@ -35,3 +38,16 @@ You are the BYOAI commons job. Base URL https://db.byoaistudio.com, key in <file
 ```
 
 `kind` is one of news, article, interview, podcast, talk, award, upcoming. Times are UTC.
+
+## Exact SQL
+
+A reading AI adds a private find, then reads both layers:
+
+```sql
+insert into authors (name) values ('Eric Ries') on conflict (slug) do nothing;
+insert into author_news (author_id, happened_on, headline, url, source)
+  values ((select id from authors where slug = 'eric-ries'), '2026-05-26',
+          'Eric Ries publishes Incorruptible', 'https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/', 'Fortune')
+  on conflict (url) do nothing;
+select author, headline, published_on, mine, shared from news where author = 'eric-ries' order by published_on desc;
+```
