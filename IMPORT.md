@@ -69,7 +69,8 @@ Before writing, clean the file on your side:
 - **One spelling per author.** Each author gets one author page, shared by every book of theirs, and books find it
   by exact name. "Andrew Grove", "Andrew S. Grove" and "Grove, Andrew" would make three pages. Before writing, list
   every author name in the file, group the variants (case, initials, "Last, First", accents), pick one spelling per
-  person (the one in `author_facts` or `authors` if it's there, else the fullest), and rewrite every row to it. Show
+  person (the one in `author_facts` or `authors` if it's there, else the fullest), and rewrite every row to it.
+  Commas separate authors, so a name must not contain one: "Martin Luther King, Jr." becomes "Martin Luther King Jr.". Show
   him only the groups you weren't sure of. After the import, check:
   ```sql
   select split_part(author, ',', 1) as author, count(*) from books group by 1 order by 1;
@@ -92,7 +93,7 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   **PROPOSED — needs server change:** a documented size limit for one `POST /sql` body. Until then, if a 200-row
   request fails on size, halve it.
 - **Quick add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
-  tags, dates, shelf. **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
+  tags, shelf (no dates). **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
   when you write one. No score until he has a ranking. Authors go in right after the books, once each (below). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
 - **Authors, once each.** Every author of every book gets an author row, and later an author page. An author with
   twelve books gets **one** row, shared by all twelve. After the book batches (spellings already unified, section 2),
@@ -258,6 +259,9 @@ returning slug, title;
 
 A book on his shelf that isn't in his export goes in as `want` like every import; he sets the status himself.
 **PROPOSED — needs server change:** an `owned` flag, separate from reading status.
+
+After the insert, run the *Authors, once each* request from section 4 in the same session, so new authors from the
+photo get their row too.
 
 **Unsure and unreadable spines** stay in the chat list until he answers. Today nothing on the site shows them.
 **PROPOSED — needs server change:** `books.needs_review` (with the import batch), and a page that lists them for him.
