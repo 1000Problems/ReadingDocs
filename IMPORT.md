@@ -163,8 +163,9 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **Nothing imported as finished.** Read books come in as `want`; he marks them finished himself, so the site never
-  shows a finish date he didn't set. The import never writes `finished_at` or `started_at`.
+- **Nothing imported as finished.** Read books come in as `want`; he marks them finished himself. The import never
+  writes `finished_at` or `started_at`, and the server leaves them empty on insert; they fill with today only when he
+  changes a status later.
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
   by different poets both go in (the second gets slug `collected-poems-1`). **Every row needs its author**: a row with
   none matches any book with that title and is refused. Find the author first (export, `book_facts`, a source you
