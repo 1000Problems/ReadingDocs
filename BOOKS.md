@@ -38,7 +38,9 @@ shelf covers the same ground), `why_read` (the reader's own reason only, never y
 
 Give the link (`reading.hadmoney.com/books/<slug>`). If the reader has no page rules yet
 (`select source from rules where kind = 'book_description'` says `default`), ask the page question once
-([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line: *"Want its page?"*
+([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line with their sections: *"Want
+its page? Same sections: pitch, how people cite it, connections, cheat sheet?"* On a yes, write the whole first pass
+to the site and send one message ([PAGES.md](PAGES.md), *Write, then shape*).
 
 ## Exact SQL
 
