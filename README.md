@@ -10,24 +10,25 @@ are named the way they talk. The first book is one they care about, and its note
 tells them who to know. The ranking is how *they* judge a book. They should think: *how did it know?* It knew because
 you did the work. These docs tell you how.
 
-This repo is Markdown only. If you are an AI, read it in this order:
+This repo is Markdown only. If you are an AI, read [SAFETY.md](SAFETY.md) and this README, then only what your job
+needs:
 
-1. [START.md](START.md) — the first session: connect, draft their Reading from what you know, build it live.
-2. [DAILY.md](DAILY.md) — every session after: `todo`, the reader's reactions, keeping the site alive.
-3. [ADD_BOOK.md](ADD_BOOK.md) — the full add: book, author, news, book page, rank, shelf, playbook, cards.
-4. [IMPORT.md](IMPORT.md) — a reader who arrives with a library: Goodreads export, spreadsheet, bookshelf photos.
-5. [BOOKS.md](BOOKS.md) — the quick add: one row, a note, a shelf.
-6. [AUTHORS.md](AUTHORS.md) — the author row, author page, recall cards and news.
-7. [PLAYBOOK.md](PLAYBOOK.md) — how the books and authors on a shelf connect.
-8. [RANKING.md](RANKING.md) — the reader's ranking and how to score a book.
-9. [COMMONS.md](COMMONS.md) — shared facts and news, found once for everyone.
-10. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
+| Job | Read |
+|---|---|
+| First session, a few books that matter | [START.md](START.md), [ADD_BOOK.md](ADD_BOOK.md) |
+| First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
+| Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
+| One more book | [BOOKS.md](BOOKS.md) (quick add) or [ADD_BOOK.md](ADD_BOOK.md) (full add) |
+
+When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
+[RANKING.md](RANKING.md) (the reader's ranking, scoring), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf
+connect), [COMMONS.md](COMMONS.md) (shared facts and news).
 
 ## Connect (once)
 
 The reader makes the account themselves, in their browser at https://db.byoaistudio.com. You never see or need
 their password. They give you a short prompt with a connect code (6 characters, 10 minutes, one use). Whatever the
-prompt lists, read this README and follow its reading order.
+prompt lists, read this README and read by job (the table above).
 
 1. Call:
    ```
@@ -107,7 +108,9 @@ it lives in one place: the `note` of the `book_note` rule. Read it before writin
 
 Not available yet. Docs mark the steps they would change **PROPOSED**. In priority order:
 
-1. `book_authors (book_id, author_id, position)` — a book points at its authors by id. Today the database makes one author row per name it finds in `books.author` (by slug), so spelling still decides who is who.
+1. `book_authors` — **half done.** The read-only view exists today (`book_slug`, `author_slug`, `has_row`): the
+   database makes one author row per name in `books.author`, by slug, so spelling still decides who is who. Later, a
+   table books link to by id replaces the view.
 2. `profiles.purpose` — one home for the reader's goal.
    Also: copy `shelves.sentence` ↔ `blurb` when one is empty, so the AI writes one line once.
 3. Custom book-page sections (e.g. any heading prefixed `x_`), so a page can have *Where it breaks now* or *Questions
@@ -122,5 +125,4 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
    - dedupe on `isbn` (today only the same title + first author is refused);
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
    - site speed checked at 2,000+ books: home page, shelf page, search.
-8. The connect prompt says "read the README and follow its reading order" instead of naming docs, so it never goes
-   stale.
+8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.
