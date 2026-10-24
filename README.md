@@ -36,6 +36,11 @@ Any AI that can send HTTPS requests can do this. Nothing here depends on one pro
 
 Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. No DDL.
 
+## Shared facts
+
+Book facts by ISBN and news about your authors are shared by everyone: `shared_news`,
+`byoaistudio_commons.book_facts`. See [COMMONS.md](COMMONS.md). Look there before searching the web.
+
 ## Two tables that guide you
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the user's own, or the default.
