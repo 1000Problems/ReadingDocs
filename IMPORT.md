@@ -53,7 +53,7 @@ whether physical position matters to them; if so, that needs a server change.
 | `My Rating` | `rating` | 1–5; **0 means unrated → null** |
 | `Exclusive Shelf` | `status` | `read` → `finished`, `currently-reading` → `reading`, `to-read` → `want`; any other exclusive shelf (e.g. `did-not-finish`) → ask him (`abandoned` is the likely one) |
 | `Bookshelves` | `tags` | his custom shelves, lowercase, comma-split; leave out the three exclusive shelf names |
-| `Date Read` | `finished_at` | `2024/03/02` → `2024-03-02`; empty → null |
+| `Date Read` | — | **not imported.** Goodreads dates are often missing or wrong; the import never sets a finish date |
 | `Date Added` | — | not stored |
 | `My Review` | `why_read`, or nothing | `why_read` **only** if it is his reason for reading it. Otherwise ask whether to keep reviews as his own notes (`notes`, `kind = 'note'`, `source = 'me'`) or leave them out |
 | `Private Notes` | — | leave out unless he asks |
@@ -66,6 +66,14 @@ Before writing, clean the file on your side:
 
 - **Duplicates inside the file** (two editions, a hardcover and a paperback): keep one row per title + first author;
   tell him how many you merged. One refused row rolls back the whole request, so the file must be clean first.
+- **One spelling per author.** Each author gets one author page, shared by every book of theirs, and books find it
+  by exact name. "Andrew Grove", "Andrew S. Grove" and "Grove, Andrew" would make three pages. Before writing, list
+  every author name in the file, group the variants (case, initials, "Last, First", accents), pick one spelling per
+  person (the one in `author_facts` or `authors` if it's there, else the fullest), and rewrite every row to it. Show
+  him only the groups you weren't sure of. After the import, check:
+  ```sql
+  select split_part(author, ',', 1) as author, count(*) from books group by 1 order by 1;
+  ```
 - **Shared facts:** look up every ISBN in `book_facts` in one read, for covers and Kindle ids.
 
 ## 3. Excel or another sheet
@@ -106,17 +114,17 @@ update shelves set name = 'The house',
 One batch. Skips anything already in the space, by ISBN or by title + first author, so re-running it is safe:
 
 ```sql
-insert into books (title, author, isbn, cover_url, kindle_asin, status, rating, tags, finished_at, shelf)
+insert into books (title, author, isbn, cover_url, kindle_asin, status, rating, tags, shelf)
 select v.title, v.author, v.isbn,
        (select cover_url from book_facts f where f.isbn13 = v.isbn),
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
-       v.status, v.rating, v.tags, v.finished_at, 'books'
+       v.status, v.rating, v.tags, 'books'
   from (values
     ('The Lean Startup', 'Eric Ries', '9780307887894', 'finished', 4::smallint,
-     '{business,import:goodreads-2026-10-24}'::text[], date '2024-03-02'),
+     '{business,import:goodreads-2026-10-24}'::text[]),
     ('The Startup Owner''s Manual', 'Steve Blank, Bob Dorf', null::text, 'want', null::smallint,
-     '{business,import:goodreads-2026-10-24}'::text[], null::date)
-  ) as v(title, author, isbn, status, rating, tags, finished_at)
+     '{business,import:goodreads-2026-10-24}'::text[])
+  ) as v(title, author, isbn, status, rating, tags)
  where not exists (
    select 1 from books b
     where (v.isbn is not null and b.isbn = v.isbn)
@@ -125,23 +133,23 @@ select v.title, v.author, v.isbn,
 returning slug, title;
 ```
 
-Cast the first row's nulls (`null::text`, `null::date`) so the `values` list has types. `returning` lists what was
+Cast the nulls (`null::text`, `null::smallint`) so the `values` list has types. `returning` lists what was
 written; anything missing from it was already there.
 
 Check the first batch with him before the rest:
 
 ```sql
-select slug, title, author, isbn, status, rating, finished_at, (cover_url is not null) as has_cover, tags
+select slug, title, author, isbn, status, rating, (cover_url is not null) as has_cover, tags
   from books where 'import:goodreads-2026-10-24' = any(tags) order by created_at limit 25;
 select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **Finish dates.** Today the server fills `finished_at` with *today* when a book is written as `finished` without a
-  date (and `started_at` for `reading`). For an import that is wrong. Until that changes
-  (**PROPOSED — needs server change**: fill dates only when the status changes later, not on insert), tell him before
-  the import: *"Books you finished without a date will show today's date. I can wait for the fix, or import them
-  now."* Do what he says.
+- **No finish dates.** The import never writes `finished_at` or `started_at`. But today the server fills them with
+  *today* when a book is written as `finished` (or `reading`) without one, which is wrong for an import.
+  **PROPOSED — needs server change:** fill dates only when the status changes later, not on insert. Until it ships,
+  tell him before the import: *"Finished books will show today's date until a fix lands. Import now, or wait?"* Do what
+  he says.
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
   by different poets both go in (the second gets slug `collected-poems-1`). A row with **no author** matches any book
   with that title and is refused: give it an author, or its own `slug`. A duplicate **inside one request** fails the

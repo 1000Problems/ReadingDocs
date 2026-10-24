@@ -5,8 +5,9 @@ The same steps as [ADD_BOOK.md](ADD_BOOK.md) 5, 6 and 8, for when `todo` asks fo
 what to say about them in the reader's conversations.
 
 ## The row
-- One `authors` row per person. `slug` fills from `name`; keep `name` identical to how `books.author` spells it.
-  That name match is the only link from a book to its author.
+- **One author, one page**, however many of their books the reader has. One `authors` row per person. `slug` fills from `name`; keep `name` identical to how `books.author` spells it.
+  That name match is the only link from a book to its author, so every book by them must use the same spelling.
+  Before adding an author, check for a variant: `select name from authors where name ilike '%grove%'`.
 - Facts (`wiki_url`, `photo_url`, `born`, `pronunciation`) only from a page you opened. Fill when empty or wrong;
   never overwrite with a guess. `author_facts.wikipedia` / `site` may already have them.
 - `hook`: one line to remember them by.
