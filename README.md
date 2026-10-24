@@ -71,6 +71,23 @@ Book facts, author facts and articles about authors are found once for everyone,
 `book_facts` (by `isbn13`), `author_facts` (by `slug`) and `author_articles` (by `url`). Plain names work:
 `select * from book_facts where isbn13 = '…'`. Look there before searching the web. See [COMMONS.md](COMMONS.md).
 
+## Covers and author photos
+
+One rule, everywhere:
+
+1. **The shared facts have it** (`book_facts.cover_url` by ISBN, `author_facts.photo_url` by slug) → write nothing.
+   Leave the reader's `cover_url` / `photo_url` empty: the site shows the shared one, and keeps showing it if it's
+   replaced later.
+2. **They don't** → find it now, so the reader's first visit has it:
+   - cover: Open Library by ISBN, `https://covers.openlibrary.org/b/isbn/<isbn13>-L.jpg?default=false`. Open it: a
+     404 means there is none.
+   - photo: the author's Wikipedia page. Use the image the page actually shows (an `https://upload.wikimedia.org/…`
+     URL), never a URL you built.
+
+   Write it on the reader's own row. The weekly job adds covers and photos to the shared facts, so the next reader
+   gets them.
+3. **Nothing found** → leave it empty. Never a guess, never another site (no Amazon, Google or Goodreads images).
+
 `news` and `shared_news` show only authors already in this space. Before you add an author, read `author_articles`
 directly: `select * from author_articles where author_slug = 'eric-ries'`.
 

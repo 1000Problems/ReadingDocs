@@ -133,7 +133,8 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 | Column | What |
 |---|---|
 | `title`, `author` | exact; `author` is the full name(s), first author first. **Spell it exactly as `authors.name`**: that name match is the only link to the author page (step 5) |
-| `isbn`, `kindle_asin`, `cover_url` | from `book_facts`, else from the web, else null |
+| `isbn`, `kindle_asin` | from `book_facts`, else from the web, else null |
+| `cover_url` | empty when `book_facts` has a cover (the site shows it); else Open Library now, else empty (README, *Covers and author photos*) |
 | `shelf`, `niche` | from step 2 |
 | `status` | `want` · `reading` · `finished` · `abandoned` |
 | `tags` | a few lowercase words |
@@ -143,10 +144,9 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 | `why_read` | the reader's own reason, if they gave one. Don't write it for them |
 
 ```sql
-insert into books (title, author, isbn, kindle_asin, cover_url, status, shelf, niche, tags,
+insert into books (title, author, isbn, kindle_asin, status, shelf, niche, tags,
                    note, founder_angle, overlap)
 values ('The Lean Startup', 'Eric Ries', '9780307887894', 'B004J4XGN6',
-        (select cover_url from book_facts where isbn13 = '9780307887894'),
         'want', 'founder', 'idea', '{startups,validation}',
         '…40–90 words: why this book, for this reader…',
         '…how MVP and validated learning come up when an AI founder pitches you…',
@@ -178,7 +178,8 @@ select slug, rank, rank_why from books where slug = 'the-lean-startup';
 The row already exists: the database makes one `authors` row per author when the book is written (step 3), and never
 a second for the same person. Same person = same slug (`Eric Ries` → `eric-ries`; case, accents, Dr./Jr. ignored).
 Co-authors (`'Steve Blank, Bob Dorf'`, or with `&`, `and`) each get their own row and page. Your job is the facts, only
-from a source you opened: `wiki_url` (already filled when the shared facts have it), `photo_url`, `born`,
+from a source you opened: `wiki_url` (already filled when the shared facts have it), `photo_url` (only if
+`author_facts` has none: README, *Covers and author photos*), `born`,
 `pronunciation`, and `hook`, one line to remember them by.
 
 ```sql

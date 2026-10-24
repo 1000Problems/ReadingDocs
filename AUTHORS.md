@@ -15,6 +15,7 @@ what to say about them in the reader's conversations.
   on conflict (slug) do nothing;
   ```
   (It splits on commas only: rewrite `&` / `and` between co-authors to commas first.)
+- Photo: per README, *Covers and author photos* (shared first; else the Wikipedia image, now; else empty).
 - Facts (`wiki_url`, `photo_url`, `born`, `pronunciation`) only from a page you opened. Fill when empty or wrong;
   never overwrite with a guess. `author_facts.wikipedia` / `site` may already have them.
 - `hook`: one line to remember them by.

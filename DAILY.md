@@ -33,7 +33,7 @@ For a reader with hundreds or thousands of books ([IMPORT.md](IMPORT.md)), sched
 best first:
 
 1. books they're reading, then rated 5, then rated 4: a note and a score;
-2. missing covers and ISBNs, from `book_facts` or a source you opened;
+2. missing ISBNs, and covers/photos the shared facts still don't have (README, *Covers and author photos*);
 3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist
    with the books (the database makes one per author); never add a second row for an author who has one.
 

@@ -10,7 +10,8 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 1. **Is it already there?** `select slug, title, author from books where title ilike '%…%'`, or `select * from search('…')`.
    Adding the same book twice is refused and the error names the existing slug. Update that one.
 2. **Look it up.** Shared facts first: `select * from book_facts where title ilike '%…%'` (ISBN-13, cover, Kindle ASIN,
-   year). Then the web for what is missing: exact title, author(s), ISBN, cover URL. Never invent an ISBN. Leave it null.
+   year). Then the web for what is missing: exact title, author(s), ISBN. Never invent an ISBN. Leave it null. Cover: README,
+   *Covers and author photos*.
 3. **Shelf and niche.** `select slug, name, niches from shelves`. Pick from what exists. No shelf → the home shelf.
    A niche must be on the shelf; the error lists the valid ones. To add one:
    `update shelves set niches = niches || '[{"id":"validation","label":"Idea and validation","sentence":"…"}]'::jsonb where slug = 'founder';`

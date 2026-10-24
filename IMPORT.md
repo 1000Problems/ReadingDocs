@@ -126,9 +126,8 @@ update shelves set name = 'The house',
 One batch. Skips anything already in the space, by ISBN or by title + first author, so re-running it is safe:
 
 ```sql
-insert into books (title, author, isbn, cover_url, kindle_asin, status, rating, tags, shelf)
+insert into books (title, author, isbn, kindle_asin, status, rating, tags, shelf)
 select v.title, v.author, v.isbn,
-       (select cover_url from book_facts f where f.isbn13 = v.isbn),
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
        v.status, v.rating, v.tags, 'books'
   from (values
@@ -151,7 +150,7 @@ written; anything missing from it was already there.
 Check the first batch with him before the rest:
 
 ```sql
-select slug, title, author, isbn, status, rating, (cover_url is not null) as has_cover, tags
+select slug, title, author, isbn, status, rating, tags
   from books where 'import:goodreads-2026-10-24' = any(tags) order by created_at limit 25;
 select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
@@ -236,8 +235,8 @@ Thing About Hard Things".
 ### Write it: one request per photo
 
 ```sql
-insert into books (title, author, isbn, cover_url, status, shelf, tags)
-select v.title, v.author, v.isbn, (select cover_url from book_facts f where f.isbn13 = v.isbn),
+insert into books (title, author, isbn, status, shelf, tags)
+select v.title, v.author, v.isbn,
        'want', 'books', '{import:photo-2026-10-24-1}'::text[]
   from (values ('Zero to One', 'Peter Thiel', null::text),
                ('High Output Management', 'Andrew S. Grove', null::text)) as v(title, author, isbn)
@@ -273,9 +272,9 @@ The import gives him the library. The rest comes slowly, best first, and never a
   ```
   Each page follows [AUTHORS.md](AUTHORS.md) (shared facts and articles first). At 900 authors this takes weeks;
   that's fine.
-- **Covers and ISBNs** missing after the import: from `book_facts`, else a source you opened (Open Library returns a
-  cover only when it has one if you ask with `?default=false`, e.g.
-  `https://covers.openlibrary.org/b/isbn/9780307887894-M.jpg?default=false`; a 404 means none, leave it null).
+- **Covers:** don't copy them. Books whose ISBN is in `book_facts` show the shared cover already, and more appear as
+  the weekly job finds them. For the books he cares about most, look one up now (README, *Covers and author photos*).
+  Missing ISBNs: from `book_facts` by title, else a source you opened.
 - **Gaps worth a line:** "You have volumes 1 and 3 of …", "eleven books by Grove, no author page yet".
 
 Scheduled runs do this in small batches ([DAILY.md](DAILY.md), *A large library*).
