@@ -39,6 +39,12 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
    others, `news_books` the books it's about. Then
    `update authors set news_checked_at = now()`. Private to this reader; the weekly job never reads it.
 4. `why`: one sentence per `news_why` rules (10–40 words), tied to a book or idea on the shelf.
+5. **News or article?** The site shows an item under **Articles** when `article_kind` is set, else under **News**.
+   Something to sit down and read or hear (an essay, review, analysis, opinion piece, long profile, long written
+   interview, podcast or video episode) is an article: `kind = 'news'` and `article_kind` = `essay`, `review`,
+   `interview`, `excerpt`, `article` or `podcast` (the labels the site knows; a video episode is `podcast`).
+   Something that happened (a book released, a talk given, a prize, funding, an event coming up) is news: `kind` =
+   `news`, `talk`, `award`, `upcoming` or `interview` (a short one), with `article_kind` null.
 
 ## Exact SQL
 ```sql
