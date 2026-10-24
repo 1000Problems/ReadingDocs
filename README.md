@@ -114,16 +114,14 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
    table books link to by id replaces the view.
 2. `profiles.purpose` — one home for the reader's goal.
    Also: copy `shelves.sentence` ↔ `blurb` when one is empty, so the AI writes one line once.
-3. Custom book-page sections (e.g. any heading prefixed `x_`), so a page can have *Where it breaks now* or *Questions
-   to ask*.
-4. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
-5. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
+3. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
+4. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
-6. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
-7. Large libraries ([IMPORT.md](IMPORT.md)):
+5. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
+6. Large libraries ([IMPORT.md](IMPORT.md)):
    - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
      cards today);
    - dedupe on `isbn` (today only the same title + first author is refused);
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
    - site speed checked at 2,000+ books: home page, shelf page, search.
-8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.
+7. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.

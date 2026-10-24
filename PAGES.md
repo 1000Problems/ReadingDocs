@@ -28,12 +28,16 @@ always included (the database requires them). Order = the order they named, requ
 The same once for authors, before the first author page: *who they are, how to remember them, big ideas, their
 books, how people talk about them, critiques, a cheat sheet* (who, big ideas and sources are always included).
 
-Sections of their own ("where it breaks for AI startups") aren't possible yet: put that angle in the cheat sheet
-or critiques, and say so. **PROPOSED — needs server change:** custom sections.
+**Sections of their own.** If they want something the list doesn't have ("where it breaks for AI startups", "who
+quotes it now", "questions to ask a founder"), add it to their rules: an id starting `x_`, the heading they'll see,
+and one line on what goes there (the line you write to). Optional `max_words` (20–1000). Up to them where it goes in
+the order.
 
 ```sql
 insert into templates (kind, rules) values
-  ('book_description', '{"sections": [{"id":"pitch"},{"id":"cited"},{"id":"core_ideas"},{"id":"cheat_sheet"},{"id":"sources"}], "note": "Maya wants what founders will quote at her, and what to say back."}'),
+  ('book_description', '{"sections": [{"id":"pitch"},
+     {"id":"x_breaks","title":"Where it breaks for AI startups","purpose":"Where the advice fails for a company built on models.","max_words":150},
+     {"id":"cited"},{"id":"core_ideas"},{"id":"cheat_sheet"},{"id":"sources"}], "note": "Maya wants what founders will quote at her, and what to say back."}'),
   ('author_page', '{"sections": [{"id":"who"},{"id":"remember"},{"id":"big_ideas"},{"id":"how_people_talk"},{"id":"sources"}], "note": ""}')
 on conflict (kind) do update set rules = excluded.rules;
 ```
@@ -245,97 +249,39 @@ shows both `mine` and `shared`. Check that after the write; if it doesn't, tell 
 
 ## 7. The book page
 
-In the reader's sections (*The page conversation*). One `notes` row, `kind = 'summary'`, `source = 'ai'`, Markdown, one `## ` heading per section **from the rules, in
-their order, no others**. Required: pitch, core ideas, sources (at least one URL). Cheat-sheet entries are `### topic`
-then **Say:** / **Why:** / **Trap:**. No invented quotes; anything from memory marked (unverified).
+In the reader's sections (*The page conversation*), **one section per request**, so the page grows while they watch
+and each section can be undone alone. Write the section, give the link, go on to the next. Order doesn't matter: the
+page is always rebuilt in their rules' order. Writing a section again replaces it.
+
+Rules: only the reader's sections; pitch, core ideas and sources (with at least one URL) belong on every page, but
+the page may be partial while you build it. Cheat-sheet blocks (`### topic` then **Say:** / **Why:** / **Trap:**)
+work in any section. No invented quotes; anything from memory marked (unverified). Use the news from steps 1 and 6:
+recent articles go in *How people cite it*, *Critiques* and *Sources*.
 
 ```sql
 select rules from rules where kind = 'book_description';
-select sections from catalog where kind = 'book_description';
+insert into book_sections (book_slug, section_id, body) values ('the-lean-startup', 'pitch', '…');
+insert into book_sections (book_slug, section_id, body) values ('the-lean-startup', 'x_breaks', '…');
+select section_id, title, position from book_sections where book_slug = 'the-lean-startup' order by position;
+select sections, missing from pages where kind = 'book' and slug = 'the-lean-startup';
 ```
 
-```sql
-insert into notes (book_id, kind, source, body)
-values ((select id from books where slug = 'the-lean-startup'), 'summary', 'ai',
-'## The 30-second pitch
-…
+Remove a section: `delete from book_sections where book_slug = '…' and section_id = '…'`.
 
-## Core ideas
-- **Build–measure–learn** — …
-- **Minimum viable product** — …
-- **Validated learning** — …
-
-## Frameworks & mental models
-…
-
-## How people cite it
-…
-
-## Critiques & counterpoints
-…
-
-## Connections
-- The Startup Owner''s Manual (Steve Blank, Bob Dorf) — …
-
-## Watch for while reading
-…
-
-## Cheat sheet
-### MVP
-**Say:** …
-**Why:** …
-**Trap:** …
-
-## Sources
-- https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/
-- …');
-```
-
-Use the news from steps 1 and 6: recent articles go in *How people cite it*, *Critiques* and *Sources*.
-
-The reader's own angle (for Maya: where the book holds up for AI startups and where it breaks) goes in
-`books.founder_angle`, *Critiques & counterpoints* and *Watch for while reading* today.
-
-**PROPOSED — needs server change:** custom sections. The validator refuses any heading not in the catalog. Wanted:
-`ai_era` (where it holds up and breaks now), `who_cites` (founders, investors, podcasts that bring it up),
-`short_version` (the chapters that matter), `questions` (what to ask a founder). Then:
-`insert into templates (kind, rules) values ('book_description', '{"sections":[{"id":"pitch"},…,{"id":"ai_era"},…]}') …`
+**After a rules change** ("add critiques to my book pages"): rewriting any section rebuilds the page in the new
+rules, and sections no longer in the rules are dropped (undo brings them back). Find what to offer filling:
+`select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
 
 ## 8. The author page
 
-`authors.summary`, Markdown, `## ` sections per the `author_page` rules. Required: who they are, big ideas, sources
-(at least one URL). Full names, never surname only. Describe a face only after looking at the photo.
+The same, in the `author_page` rules: one section per request through `author_sections`. Who they are, big ideas
+and sources belong on every page. Full names, never surname only. Describe a face only after looking at the photo.
 
 ```sql
-update authors set summary =
-'## Who they are
-…
-
-## How to remember them
-…
-
-## Big ideas
-- …
-
-## Their books
-- The Lean Startup (2011, on your Founder shelf) — …
-
-## How people talk about them
-…
-
-## Critiques
-…
-
-## Cheat sheet
-### …
-**Say:** …
-**Why:** …
-**Trap:** …
-
-## Sources
-- https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/
-- https://steveblank.com/2026/06/09/incorruptible/'
- where slug = 'eric-ries';
+insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'who', '…');
+insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'sources',
+  '- https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/');
+select sections, missing from pages where kind = 'author' and slug = 'eric-ries';
 ```
 
 Recall cards for the author (`face` needs a photo; `idea`, `who`, `book`, `taught`), same request or the next:
