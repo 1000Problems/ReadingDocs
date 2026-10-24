@@ -16,7 +16,7 @@ needs:
 | Job | Read |
 |---|---|
 | First session, a few books that matter | [START.md](START.md), [BOOKS.md](BOOKS.md) |
-| First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
+| First session, a whole library or "all my books in one place" (Goodreads export, spreadsheet, Kindle library, bookcase photos), or 10+ books at once | [IMPORT.md](IMPORT.md) (*The fast path*). Don't run the [START.md](START.md) interview |
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
 | A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose, written first, shaped after |
@@ -41,7 +41,8 @@ prompt lists, read this README and read by job (the table above).
    the space (`space <handle> · …`). Tell the reader the handle before you write anything.
 2. Every later request: `Authorization: Bearer <key>`.
 3. Code refused or expired → ask the reader for a new one on db.byoaistudio.com. Don't retry the old one.
-4. Then go to [START.md](START.md). Don't add anything before the reader has seen your plan.
+4. Then go to [START.md](START.md), unless they already have a library — then [IMPORT.md](IMPORT.md) (*The fast path*)
+   is the plan. Don't add anything before the reader has seen your plan.
 
 Any AI that can send HTTPS requests can do this. Nothing here depends on one product.
 

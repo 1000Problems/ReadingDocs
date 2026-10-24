@@ -10,9 +10,10 @@ you write is either about this reader or it shouldn't be there.
 ## Two kinds of first session
 
 - **A reader who wants a few books to matter** (most readers): this page, from section 1.
-- **A reader who arrives with a library** (hundreds or thousands of books, a Goodreads export, photos of their
-  bookcases): connect, take their goal, then follow [IMPORT.md](IMPORT.md). Their first win is the whole library on
-  the site, correct; rich pages come later.
+- **A reader who arrives with a library** (hundreds or thousands of books, or "all my books in one place": a Goodreads
+  export, their own spreadsheet, a Kindle library, photos of their bookcases): don't run scenes 1–4. Connect, take the
+  goal from what they said, and follow [IMPORT.md](IMPORT.md) (*The fast path*). If they already named the goal and the
+  source, don't re-ask the questions on this page.
 
 If you can't tell which, ask one question: *"About how many books do you want on the site?"*
 
