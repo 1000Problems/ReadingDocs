@@ -1,6 +1,6 @@
 # AUTHORS — author rows, pages and news
 
-The same steps as [ADD_BOOK.md](ADD_BOOK.md) 5, 6 and 8, for when `todo` asks for an author on its own
+The same steps as [PAGES.md](PAGES.md) 5, 6 and 8, in the sections the reader chose, for when `todo` asks for an author on its own
 (`author_page:<slug>`, `author_check:<slug>`). The page is written for this reader: who this person is *to them*, and
 what to say about them in the reader's conversations.
 

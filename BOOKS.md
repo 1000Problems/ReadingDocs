@@ -1,7 +1,10 @@
-# BOOKS — adding a book
+# BOOKS — add a book
 
-This is the quick add: one row, a note, a shelf, a score. For the full add (author, news, book page, playbook) see
-[ADD_BOOK.md](ADD_BOOK.md). The first book for a new reader is always a full add.
+Every book is added this way: one request, under a minute. The reader sees it on their shelf right away, with its
+cover (from the shared facts), a note on why it's for them, and a score. The database makes the author row.
+
+**No pages here.** No book page, no author page, no news search, no cards. Those come after, in the sections the
+reader chose ([PAGES.md](PAGES.md)). Ten or more books at once: [IMPORT.md](IMPORT.md).
 
 Read the reader's goal first: `select rules ->> 'note' from rules where kind = 'book_note'`.
 
@@ -29,8 +32,13 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `founder_angle`, `overlap` (which book on the
 shelf covers the same ground), `why_read` (the reader's own reason only, never yours).
 
-`slug` is made from the title if you leave it out. Adding 10 or more: IMPORT.md, *Many books at once*. For imports (a Goodreads export, a spreadsheet, photos), see
-[IMPORT.md](IMPORT.md).
+`slug` is made from the title if you leave it out.
+
+## After the add
+
+Give the link (`reading.hadmoney.com/books/<slug>`). If the reader has no page rules yet
+(`select source from rules where kind = 'book_description'` says `default`), ask the page question once
+([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line: *"Want its page?"*
 
 ## Exact SQL
 

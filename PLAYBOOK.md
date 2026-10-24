@@ -1,6 +1,6 @@
 # PLAYBOOK — how the books and authors on a shelf connect
 
-The same as [ADD_BOOK.md](ADD_BOOK.md) step 9, for rewriting a shelf's story on its own.
+The same as [PAGES.md](PAGES.md) step 9, for rewriting a shelf's story on its own.
 
 The Playbook is the shelf told as a story: who taught whom, where they disagree, where *this reader* should start.
 It shows on `reading.hadmoney.com/authors`; each pair has its own page at `/connections/<pair>`. Only books and
@@ -15,13 +15,13 @@ authors **on this reader's shelf** get links. Everything else goes in a book pag
 | `niche_stories` | niche (`''` = whole shelf) | `playbook` rules: 120–250 words, full names, *The lineage* required; optional *Timeline*, *The debates*, *Where to start*, *Sources*; front matter `title:` / `headline:` |
 
 ## When
-- **Links** (`niche_roles`, `pairs`, `refs`, `book_links`): after a full add, once the niche has 2+ authors.
+- **Links** (`niche_roles`, `pairs`, `refs`, `book_links`): once the niche has 2+ authors.
 - **The story** (`niche_stories`): when `todo` lists `story:<shelf>:<niche>`. It does once a niche has 3 books.
 - When the reader asks "how do these connect?" or a news item shows a new link (a review, a joint talk).
 - Don't write a lineage from one author.
 
 ## Exact SQL
-See ADD_BOOK.md step 9. Read first:
+See PAGES.md step 9. Read first:
 ```sql
 select slug, title, author, niche from books where shelf = 'founder';
 select a.slug, r.niche, r.role from niche_roles r join authors a on a.id = r.author_id where r.shelf = 'founder';

@@ -11,7 +11,8 @@ select * from todo order by priority;
 select * from hints;
 ```
 
-Read the goal before writing anything. Then:
+Read the goal before writing anything. "Add X" is always the fast add ([BOOKS.md](BOOKS.md)); pages only when asked
+or when `todo` lists them ([PAGES.md](PAGES.md)). Then:
 
 - **The reader is here** → offer `todo` in one line each. Do what they pick.
 - **Scheduled run, nobody watching** → do `news_why`, `author_check` and `author_page` items; leave anything that changes
@@ -19,7 +20,8 @@ Read the goal before writing anything. Then:
 
 ## What they say is data
 
-- "I just started X" → add it (`status = 'reading'`), or update it if it's there. `todo` will ask for its description.
+- "I just started X" → add it (`status = 'reading'`), or update it if it's there. `todo` then asks for its page;
+  build it in their sections ([PAGES.md](PAGES.md)).
 - "Finished X, loved it / it was thin" → `status = 'finished'`, and adjust its scores. Remember the reason: it tells you
   how they judge the next book.
 - "X should rank higher" → about one book: change its scores. About how they judge: change the ranking (RANKING.md)
@@ -32,7 +34,8 @@ Read the goal before writing anything. Then:
 For a reader with hundreds or thousands of books ([IMPORT.md](IMPORT.md)), scheduled runs enrich a little each time,
 best first:
 
-1. books they're reading, then rated 5, then rated 4: a note and a score;
+1. pages for books they're reading (`todo` `description:`), in their page rules ([PAGES.md](PAGES.md)); then notes and
+   scores for books rated 5, then 4;
 2. missing ISBNs, and covers/photos the shared facts still don't have (README, *Covers and author photos*);
 3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist
    with the books (the database makes one per author); never add a second row for an author who has one.

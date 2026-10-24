@@ -15,10 +15,11 @@ needs:
 
 | Job | Read |
 |---|---|
-| First session, a few books that matter | [START.md](START.md), [ADD_BOOK.md](ADD_BOOK.md) |
+| First session, a few books that matter | [START.md](START.md), [BOOKS.md](BOOKS.md) |
 | First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
-| One more book | [BOOKS.md](BOOKS.md) (quick add) or [ADD_BOOK.md](ADD_BOOK.md) (full add) |
+| Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
+| A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose |
 
 When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
 [RANKING.md](RANKING.md) (the reader's ranking, scoring), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf

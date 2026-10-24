@@ -47,7 +47,7 @@ Anything you don't know, ask; don't guess. If you know very little, say so plain
 itself is a clue), and ask for the rest in the plan. Their name: use it if you know it, otherwise ask. Never put the
 handle or a guess in `display_name`.
 
-**They open with "add this book."** Plan it as the first book: a full add (ADD_BOOK.md) on a shelf named for what the
+**They open with "add this book."** Plan it as the first book ([BOOKS.md](BOOKS.md)) on a shelf named for what the
 book says about them. Show the plan first (section 2), then build it in scenes.
 
 ## 2. Show the plan, ask at most two questions
@@ -69,14 +69,20 @@ Each scene is one request (one change they can undo) and ends with a link. Tell 
 
 **Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
 
-**Scene 2 — the first book, full.** [ADD_BOOK.md](ADD_BOOK.md) steps 0–4 and 7: the goal, the row, the note, the score, the
-book page. Link: `/books/<slug>`. This is the page they'll judge you by. Make the note and the *Cheat sheet* speak to
-their goal and to what they've actually told you. Never invent a detail about them to sound personal.
+Adding books is fast; pages come after, the way the reader wants them. Don't write a page, search the web for news
+or write an author page until the reader has said what they want to see.
 
-**Scene 3 — its author.** [ADD_BOOK.md](ADD_BOOK.md) steps 5, 6 and 8. Link: `/authors/<slug>`.
+**Scene 2 — the first book.** [BOOKS.md](BOOKS.md): the row, the note, the score, in one request, in under a minute.
+Link: `/books/<slug>`. Make the note speak to their goal and to what they've actually told you. Never invent a detail
+about them to sound personal.
 
-**Scene 4 — the rest of the shelf.** The other books, quick add ([BOOKS.md](BOOKS.md)), each with a note and a score,
-in one request. Link: the home page again, now ranked. If one niche now has two authors, write its playbook
+**Scene 3 — what they want to see.** Ask the page question once ([PAGES.md](PAGES.md), *The page conversation*), save
+their answer as their page rules, then build **this one** book page in those sections. Link: `/books/<slug>` again,
+now with its page. This is the page they'll judge you by. Offer the author page the same way (*"Want a page for Eric
+Ries?"*); build it only on a yes.
+
+**Scene 4 — the rest of the shelf.** The other books, the same fast add, all in one request, no pages. Link: the home
+page again, now ranked. Their pages wait until they ask, or until they start reading one. If one niche now has two authors, write its playbook
 ([PLAYBOOK.md](PLAYBOOK.md)).
 If you saved the two book questions for later, ask them here, with the first book on screen.
 

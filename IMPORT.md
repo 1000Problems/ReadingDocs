@@ -24,7 +24,7 @@ whether physical position matters to them; if so, that needs a server change.
 ## Many books at once (10–200)
 
 Don't do one book at a time: 200 lookups and 200 writes take hours, and the reader sees nothing until the end. Don't
-do full adds either. Work in passes, so the library appears in minutes and gets richer after:
+write pages either. Work in passes, so the library appears in minutes and gets richer after:
 
 1. **One read for all of them.** Every title against `books` (already there → skip) and `book_facts` (ISBN, cover,
    Kindle id), in one request with `where lower(title) in (…)`.
@@ -32,11 +32,11 @@ do full adds either. Work in passes, so the library appears in minutes and gets 
    needs: exact title, author, ISBN, cover. Not found → null. Never invent one.
 3. **Show the plan in counts, get one yes.** *"200 books: 12 already here, 188 new, 9 with no ISBN found. First 25,
    then the rest in two requests."*
-4. **Write in batches.** Quick add rows (title, author, isbn, cover, status, shelf, tags; a note only if you have a real
+4. **Write in batches.** Fast-add rows ([BOOKS.md](BOOKS.md)) (title, author, isbn, cover, status, shelf, tags; a note only if you have a real
    reason for this reader). First 25, give the link, then up to 200 rows per request. Each request is one undo. One
    bad row fails its whole request, so clean the list first. Section 4 has the exact SQL.
 5. **Enrich best first.** Afterwards, a few books per request: notes and scores for the 5–10 that matter most to their
-   goal, a full add for the one or two they're most excited about. The rest on later sessions and scheduled runs
+   goal, pages (in their sections, after the page question) for the one or two they're most excited about. The rest on later sessions and scheduled runs
    ([DAILY.md](DAILY.md)).
 
 The rest of this page is the full method for a whole library.
@@ -115,9 +115,9 @@ Each request is one transaction: all of it is written, or none. Each is one chan
 - **Batch size:** 25 for the first batch, then up to 200 rows per request.
   **PROPOSED — needs server change:** a documented size limit for one `POST /sql` body. Until then, if a 200-row
   request fails on size, halve it.
-- **Quick add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
+- **The fast add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
   tags, shelf (no dates). **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
-  when you write one. No score until he has a ranking. Authors come with the books (below). See [ADD_BOOK.md](ADD_BOOK.md), *Quick add*.
+  when you write one. No score until he has a ranking. Authors come with the books (below). See [BOOKS.md](BOOKS.md).
 - **Authors come with the books.** The database gives every author of every book an author row the moment the book
   is written, and never a second one: an author with twelve books has **one** row and one page, shared by all twelve.
   Same author = same slug (case, accents, Dr./Jr. ignored), the same rule the site uses to link books to author pages.
@@ -202,7 +202,7 @@ then one `update … from (values …)` request.
 
 Everything starts on the home shelf. That's fine for day one: the site ranks it and search finds any book. Once the
 import is in, look at his most-used Goodreads shelves (now `tags`) and offer two to five topic shelves from them, in his
-words ([START.md](START.md), [ADD_BOOK.md](ADD_BOOK.md) step 2). Moving books onto them is a bulk update: show the
+words ([START.md](START.md), [PAGES.md](PAGES.md) step 2). Moving books onto them is a bulk update: show the
 counts and wait for a yes.
 
 ```sql
@@ -282,7 +282,7 @@ status himself.
 
 The import gives him the library. The rest comes slowly, best first, and never all at once:
 
-- **On request:** "tell me about this one" → a full add for that book ([ADD_BOOK.md](ADD_BOOK.md)).
+- **On request:** "tell me about this one" → its page, in his sections ([PAGES.md](PAGES.md)).
 - **Rich pages** (note, score, book page) only for books he rated 5 (then 4), the ones he's reading, or the ones he
   asks about.
 - **Author pages for every author**, one page each however many books he owns, most-owned first, then authors of
