@@ -61,8 +61,16 @@ always included (the database requires them). Order = the order they named, requ
 "Add critiques to my book pages" later → change the rules, and offer to redo existing pages.
 
 The same once for authors, before the first author page, numbered the same way: *1. how to remember them, 2. their
-books, 3. how people talk about them, 4. critiques, 5. a cheat sheet, 6. something of your own* (who they are, big
-ideas and sources are always included).
+books, 3. how people talk about them, 4. critiques, 5. a cheat sheet, 6. their latest news and articles, 7. something
+of your own* (who they are, big ideas and sources are always included).
+
+Two of these carry live lists the site keeps up to date, placed where the reader puts them in the order:
+- **2. Their books** (`books`): write a line or two on what their books add up to for this reader; the site shows the
+  books on the reader's shelves underneath. Not chosen → the list sits below the page.
+- **6. Their latest news and articles**: a section of the reader's own whose id starts `x_news` (heading in their
+  words, e.g. `{"id": "x_news", "title": "What he's saying now", "purpose": "What his latest work means for me."}`).
+  Write your take on what's recent; the site shows the news and articles underneath, newest first. Not chosen → the
+  list sits below the page.
 
 **Sections of their own.** If they want something the list doesn't have ("where it breaks for AI startups", "who
 quotes it now", "questions to ask a founder"), add it to their rules: an id starting `x_`, the heading they'll see,
