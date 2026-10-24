@@ -40,34 +40,37 @@ select kind, chapter, body from notes where book_id = (select id from books wher
 
 Before the first page, unless they already have page rules (`select source from rules where kind =
 'book_description'` says `yours`), ask once, in one message. **Number every option** so they can answer with numbers
-("2, 5, 1"), in the order they want. Say which sections are always on the page, give each option one line written for
-this book or author, and end with the way to add their own:
+("2, 5, 1"), in the order they want. Every section is their choice: nothing is added that they didn't pick. Give
+each option one line written for this book or author, and end with the way to add their own:
 
-> *This is your first book page, so what you pick becomes the format for every book after it. The pitch, core ideas
-> and sources are always on it. Which of these do you want too? Reply with numbers, in the order you want them.*
-> 1. *Frameworks: the named tools in the book, one line each.*
-> 2. *How people cite it: what founders mean when they drop it into a conversation.*
-> 3. *Critiques: where people push back.*
-> 4. *Connections: the other books it talks to.*
-> 5. *Watch for while reading: what to notice.*
-> 6. *A cheat sheet: what to say, why, and the trap.*
-> 7. *Something of your own: tell me what, e.g. "where it breaks for AI startups".*
+> *This is your first book page, so what you pick becomes the format for every book after it. Which of these do you
+> want? Reply with numbers, in the order you want them.*
+> 1. *The 30-second pitch: the book in the time it takes to answer "have you read it?"*
+> 2. *Core ideas: 5–7 bullets in the author's own terms.*
+> 3. *Frameworks: the named tools in the book, one line each.*
+> 4. *How people cite it: what founders mean when they drop it into a conversation.*
+> 5. *Critiques: where people push back.*
+> 6. *Connections: the other books it talks to.*
+> 7. *Watch for while reading: what to notice.*
+> 8. *A cheat sheet: what to say, why, and the trap.*
+> 9. *Sources: the links behind the page.*
+> 10. *Something of your own: tell me what, e.g. "where it breaks for AI startups".*
 
 Read their reply as numbers first ("1, 3, 6" or "3 then 1"), words second. Confirm the order in one line before
 saving.
 
-Their answer becomes their page rules, saved once and used for every book. The pitch, core ideas and sources are
-always included (the database requires them). Order = the order they named, required ones where they fit.
+Their answer becomes their page rules, saved once and used for every book: exactly the sections they picked, in the
+order they named. Nothing else.
 "Add critiques to my book pages" later → change the rules, and offer to redo existing pages.
 
-The same once for authors, before the first author page, numbered the same way: *1. how to remember them, 2. their
-books, 3. how people talk about them, 4. critiques, 5. a cheat sheet, 6. their latest news and articles, 7. something
-of your own* (who they are, big ideas and sources are always included).
+The same once for authors, before the first author page, numbered the same way: *1. who they are, 2. how to
+remember them, 3. big ideas, 4. their books, 5. how people talk about them, 6. critiques, 7. a cheat sheet, 8. their
+latest news and articles, 9. sources, 10. something of your own*.
 
 Two of these carry live lists the site keeps up to date, placed where the reader puts them in the order:
-- **2. Their books** (`books`): write a line or two on what their books add up to for this reader; the site shows the
+- **4. Their books** (`books`): write a line or two on what their books add up to for this reader; the site shows the
   books on the reader's shelves underneath. Not chosen → the list sits below the page.
-- **6. Their latest news and articles**: a section of the reader's own whose id starts `x_news` (heading in their
+- **8. Their latest news and articles**: a section of the reader's own whose id starts `x_news` (heading in their
   words, e.g. `{"id": "x_news", "title": "What he's saying now", "purpose": "What his latest work means for me."}`).
   Write your take on what's recent; the site shows the news and articles underneath, newest first. Not chosen → the
   list sits below the page.
@@ -305,8 +308,8 @@ In the reader's sections (*The page conversation*), **one section per request**,
 and each section can be undone alone. Write the section, give the link, go on to the next. Order doesn't matter: the
 page is always rebuilt in their rules' order. Writing a section again replaces it.
 
-Rules: only the reader's sections; pitch, core ideas and sources (with at least one URL) belong on every page, but
-the page may be partial while you build it. Cheat-sheet blocks (`### topic` then **Say:** / **Why:** / **Trap:**)
+Rules: only the reader's sections, and only those. A Sources section, when they chose one, needs at least one URL.
+Without one, still invent nothing: link the page you relied on in the text. Cheat-sheet blocks (`### topic` then **Say:** / **Why:** / **Trap:**)
 work in any section. No invented quotes; anything from memory marked (unverified). Use the news from steps 1 and 6:
 recent articles go in *How people cite it*, *Critiques* and *Sources*.
 
@@ -326,8 +329,8 @@ rules, and sections no longer in the rules are dropped (undo brings them back). 
 
 ## 8. The author page
 
-The same, in the `author_page` rules: one section per request through `author_sections`. Who they are, big ideas
-and sources belong on every page. Full names, never surname only. Describe a face only after looking at the photo.
+The same, in the `author_page` rules: one section per request through `author_sections`, only the sections the
+reader picked. Full names, never surname only. Describe a face only after looking at the photo.
 
 ```sql
 insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'who', '…');

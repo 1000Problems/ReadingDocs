@@ -25,7 +25,7 @@ what to say about them in the reader's conversations.
 
 ## The page
 Only after the reader said yes to it, in their `author_page` rules ([PAGES.md](PAGES.md), *The page conversation*),
-one section per request through `author_sections`. Who they are, big ideas and sources (1+ URL) belong on every page.
+one section per request through `author_sections`, only the sections they picked (a Sources section needs 1+ URL).
 Full names. Describe a face only after looking at the photo. Use the author's news in *How people talk about them*.
 
 Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
