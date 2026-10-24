@@ -51,13 +51,13 @@ whether physical position matters to them; if so, that needs a server change.
 | `ISBN13` | `isbn` | strip the `=""` wrapper (`="9780307887894"` → `9780307887894`); empty → null |
 | `ISBN` | `isbn` | only when `ISBN13` is empty; same wrapper |
 | `My Rating` | `rating` | 1–5; **0 means unrated → null** |
-| `Exclusive Shelf` | `status` | `read` → `finished`, `currently-reading` → `reading`, `to-read` → `want`; any other exclusive shelf (e.g. `did-not-finish`) → ask him (`abandoned` is the likely one) |
+| `Exclusive Shelf` | `status` | `currently-reading` → `reading`; everything else (`read`, `to-read`, any other shelf) → `want`. **Never import a book as `finished`**: he marks books finished himself on the site |
 | `Bookshelves` | `tags` | his custom shelves, lowercase, comma-split; leave out the three exclusive shelf names |
 | `Date Read` | — | **not imported.** Goodreads dates are often missing or wrong; the import never sets a finish date |
 | `Date Added` | — | not stored |
 | `My Review` | `why_read`, or nothing | `why_read` **only** if it is his reason for reading it. Otherwise ask whether to keep reviews as his own notes (`notes`, `kind = 'note'`, `source = 'me'`) or leave them out |
 | `Private Notes` | — | leave out unless he asks |
-| `Owned Copies` | — | a hint only: many people never fill it. Ask whether `to-read` books he doesn't own come in at all (there is no "owned" column yet; tag those he doesn't own `wishlist`; default: bring them in) |
+| `Owned Copies` | — | a hint only: many people never fill it. `to-read` books come in like the rest, as `want`, with no extra tag |
 | `Book Id`, `Average Rating`, `Publisher`, `Binding`, `Number of Pages`, `Year Published`, … | — | not stored; `book_facts` and later lookups cover facts |
 
 Never write a rating, review or reason he didn't give. `rating` is his, not yours.
@@ -120,7 +120,7 @@ select v.title, v.author, v.isbn,
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
        v.status, v.rating, v.tags, 'books'
   from (values
-    ('The Lean Startup', 'Eric Ries', '9780307887894', 'finished', 4::smallint,
+    ('The Lean Startup', 'Eric Ries', '9780307887894', 'want', 4::smallint,
      '{business,import:goodreads-2026-10-24}'::text[]),
     ('The Startup Owner''s Manual', 'Steve Blank, Bob Dorf', null::text, 'want', null::smallint,
      '{business,import:goodreads-2026-10-24}'::text[])
@@ -145,15 +145,13 @@ select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
 ```
 
 Look for:
-- **No finish dates.** The import never writes `finished_at` or `started_at`. But today the server fills them with
-  *today* when a book is written as `finished` (or `reading`) without one, which is wrong for an import.
-  **PROPOSED — needs server change:** fill dates only when the status changes later, not on insert. Until it ships,
-  tell him before the import: *"Finished books will show today's date until a fix lands. Import now, or wait?"* Do what
-  he says.
+- **Nothing imported as finished.** Read books come in as `want`; he marks them finished himself, so the site never
+  shows a finish date he didn't set. The import never writes `finished_at` or `started_at`.
 - **Same titles.** A book is a duplicate only when the title **and** the first author match, so two "Collected Poems"
-  by different poets both go in (the second gets slug `collected-poems-1`). A row with **no author** matches any book
-  with that title and is refused: give it an author, or its own `slug`. A duplicate **inside one request** fails the
-  whole request: the file must be clean first.
+  by different poets both go in (the second gets slug `collected-poems-1`). **Every row needs its author**: a row with
+  none matches any book with that title and is refused. Find the author first (export, `book_facts`, a source you
+  opened); if you can't, leave it out and list it for him. A duplicate **inside one request** fails the whole request:
+  the file must be clean first.
 - **Tags show.** The book page shows every tag, so `import:…` appears on each book. Ask him once: *"OK if each book
   shows where it came from?"* If not, drop the batch tag after the import is checked (a bulk update: ask first).
 - **`todo` grows.** `todo` asks for an author page for every distinct author on any book, author row or not: a
@@ -162,7 +160,7 @@ Look for:
 - Then give him the link (`reading.hadmoney.com/`) and do the rest of the batches.
 
 Re-import (a newer export, a month later): the same insert skips what's there. For changes to books already in the
-space (a new rating, now finished), compare first, show him the list ("38 books changed: 30 finished, 8 new ratings"),
+space (a new rating), compare first, show him the list ("8 new ratings"). Never change a status from the export: he sets those,
 then one `update … from (values …)` request.
 
 ## 5. Shelves and topics, later
@@ -238,8 +236,7 @@ select v.title, v.author, v.isbn, (select cover_url from book_facts f where f.is
 returning slug, title;
 ```
 
-A book on his shelf that isn't in his export: he owns it and may have read it, so `want` can be wrong. Write it as
-`want` with the tag `owned`, and ask him once whether photo-only books should be `finished` instead.
+A book on his shelf that isn't in his export goes in as `want` like every import; he sets the status himself.
 **PROPOSED — needs server change:** an `owned` flag, separate from reading status.
 
 **Unsure and unreadable spines** stay in the chat list until he answers. Today nothing on the site shows them.
