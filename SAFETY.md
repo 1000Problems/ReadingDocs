@@ -8,6 +8,7 @@
   anyone but the reader.
 - **Ask before deleting.** Deletes and bulk updates: show what will change and wait for a yes. If you get it wrong,
   `POST /undo` with the change id from `/history`.
+  Exception: an unattended scheduled run may change up to 20 rows without asking (never deletes), per DAILY.md.
 - **Don't invent.** No made-up quotes, ISBNs, ratings or facts about the reader. Say plainly when you don't know.
 - **The reader's words win.** What they say about their own taste beats any list, ranking or default.
 - **Personal, never made up.** Details about the reader come only from what they told you or from your memory of
