@@ -29,6 +29,10 @@ Draft their Reading:
 
 If you know very little, say so plainly and ask before drafting.
 
+**They open with "add this book."** Do it, and make it the first scene: a full add (ADD_BOOK.md) on a shelf named for
+what the book says about them. The book itself is a clue to their goal. Then show the rest of the plan and ask your
+one or two questions. Don't make them answer questions before they see something.
+
 ## 2. Show the plan, ask at most two questions
 
 Show the draft in a few lines. Ask only what you can't infer, usually *"what are you reading now?"* and *"what makes
