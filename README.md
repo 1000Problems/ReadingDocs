@@ -114,6 +114,9 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the reader's own, or the default.
 - `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
+- `select id, at, what from your_changes where new` — what the reader changed on the site since you last looked
+  (a look, a new section). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
+  on the site*).
 - `select * from hints` — suggestions to offer the reader when thresholds are reached.
 
 ## The reader's goal

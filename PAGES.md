@@ -28,6 +28,18 @@ pastes to you. Both name the page by its link: take the slug from the URL (`/boo
   "the pitch is off"), offer it in one line and write only on a yes. If they ask for the change themselves, their
   words are the go-ahead: make it (*Write, then shape*, below).
 
+**Prompts copied from a section.** Every section on the site has buttons that copy one short prompt, naming the page
+and section by link (`…/books/<slug>#<section_id>`). Each asks for exactly one thing; do that thing, check the
+preview, and end with the link to `#<section_id>`:
+
+| The prompt starts | You do |
+|---|---|
+| "Let's work on the <section> on my Reading page for …" | read that section, ask what to change, write only that section |
+| "Show me 2–3 other looks for the <section> …" | offer 2–3 looks from `section_styles` (rewriting the body into a new shape is fine), then change the **template** to the pick |
+| "On my Reading, write the <section> for …" | write that one section for that book, in the template's look and shape |
+| "… write the <section> on all my book pages that don't have it yet" | `select slug from pages where kind = 'book' and has_page and '<id>' = any(missing)`; one section per request; links at the end |
+| "I want a new section on my Reading book pages …" | the custom-section conversation (*The page conversation*): heading, purpose, word cap → add an `x_` section to the rules |
+
 Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
 as if you'd read the page.
 
@@ -194,6 +206,27 @@ same way. Don't bring the design up again unless they do.
 | "just for this book, make it a timeline" | `style` on that one page |
 | "I don't like how it looks" | offer 2–3 options from the menu in one line; wait |
 | "can it be cards instead" | restyle, never remove |
+
+### What the reader changed on the site
+
+The reader can change the template on the site too: pick a look for a section ("⋯ Look") or add a catalog section
+("+ Add section"). Site changes always change the **template** (every page), never one book.
+
+**At the start of every conversation**, read what they did since you last looked:
+
+```sql
+select id, at, what from your_changes where new order by id;
+```
+
+If there's anything, say it in one line and offer the natural next step, then mark it seen:
+- a new section → "You added Critiques. Want me to write it for your 12 books?"
+- a new look → "You switched the pitch to a list. Want me to reshape pitches that read better as bullets?"
+
+```sql
+update profiles set site_changes_seen = (select max(id) from your_changes);
+```
+
+**Their choice wins.** Never change back a look or section the reader set on the site without asking.
 
 - **Section anchors.** Each section on a book or author page has `id="<section_id>"`: `#cheat_sheet` jumps to it and
   highlights it.
