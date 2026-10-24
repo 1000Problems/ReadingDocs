@@ -1,28 +1,70 @@
-# First session
+# START — the first session
 
-The user has just connected you. Their Reading is empty. Goal: five books on their shelf, each with a note that sounds like it was written for them, in under ten minutes.
+**Goal:** when this session ends, the user opens Reading and it already looks like *theirs*:
+their shelves, their way of judging books, books that fit their life, notes in their words.
 
-1. `GET /describe`. Check the first line says `apps: reading` (or includes it). Read [SAFETY.md](SAFETY.md).
-2. Look at what's there: `select * from todo` and `select count(*) from books`. If there are books already, this isn't a first session: say what you see and ask what they want.
-3. Ask **two questions**, in one message:
-   - "What do you do, and what are you trying to get better at this year?"
-   - "Name a few books that stuck with you, or that you keep meaning to read."
-4. Save what you learned as their display name only if they gave one. Everything else you keep in your own project notes, not in the database: it's what makes each book's note personal.
-5. Add the books they named, following [BOOKS.md](BOOKS.md). Up to five now; offer the rest.
-6. Tell them to open **https://reading.hadmoney.com** and sign in with the same account.
-7. Offer next steps, one line each: set up their ranking ([RANKING.md](RANKING.md)), import a Goodreads export, full descriptions for the books they'll read first.
+The site has no AI and no labels of its own. It renders only what you write. A blank shelf is a blank site.
 
-Keep the questions short. Don't interview. If they answer one word, work with one word.
+## 1. Start from what you know
+
+Before asking anything, use what you already know about this person: their work, goals, projects, the people they
+learn from, books or authors they have mentioned, what they are trying to get better at. Memory, earlier
+conversations, files they have shared: all of it counts.
+
+From that, draft their Reading:
+
+- **Name** — what the site calls them (`profiles.display_name`).
+- **3–5 shelves** — the areas of their life where reading matters (e.g. "Founder", "Health", "Spanish kitchen").
+  One sentence each on what belongs there. One shelf is `home`.
+- **Niches** — 2–5 per shelf, the sub-topics they actually care about.
+- **A ranking** — how *they* judge whether a book matters. Pick 2–6 factors from `rules where kind = 'ranking'`
+  and weights that sum to 100. Name it in their words ("Will a mentor ask?" beats "Importance").
+- **5–10 first books** — ones they've mentioned, are reading, or that fit a goal you know of.
+
+If you know very little, say so plainly and ask before drafting.
+
+## 2. Show the plan, ask at most two questions
+
+Show the draft in a few lines. Ask only what you can't infer: usually *"what are you reading now?"* and
+*"what makes a book worth your time?"*. Don't interview them. Then wait for a yes or for corrections.
+
+## 3. Write it
+
+In this order, one request per step so each can be undone alone:
+
+1. profile, shelves and niches
+2. the ranking template
+3. books, with a short note each (see [BOOKS.md](BOOKS.md)), then their scores
+
+Then `select * from todo order by priority` and tell them, in one line each, what you could do next.
+
+## 4. Keep it theirs
+
+- Notes are written for this reader, from what they told you and what you know about them. Never generic.
+- "This book should rank higher": about one book → change its scores. About how they judge → change the ranking
+  template and say what moved.
+- Learn as you go. When they react to a book, that tells you about their taste. Use it on the next one.
 
 ## Exact SQL
-What's there:
+
+Profile, one home shelf with two niches, and a second shelf:
+
 ```sql
-select count(*) as books from books;
-select * from todo limit 10;
-select slug, name, home from shelves order by position;
+insert into profiles (display_name) values ('Angel')
+  on conflict (space_id) do update set display_name = excluded.display_name;
+insert into shelves (slug, name, position, home, blurb, niches) values
+  ('founder', 'Founder', 0, true, 'Building a company: people, product, money.',
+   '[{"id":"people","label":"People"},{"id":"product","label":"Product"}]'),
+  ('kitchen', 'Spanish kitchen', 1, false, 'Cooking from home, proportions right.', '[]');
 ```
-Their display name (the profile has one row):
+
+A ranking in the user's words: 3 factors, weights sum to 100:
+
 ```sql
-insert into profiles (display_name) values ('Sam');
-select display_name from profiles;
+insert into templates (kind, rules) values ('ranking', '{
+  "score_name": "Will a mentor ask?",
+  "score_sentence": "How likely someone I learn from asks whether I have read it.",
+  "factors": [{"id":"mentor","weight":50},{"id":"talk","weight":30},{"id":"endurance","weight":20}],
+  "note": "Zero to One = 9 on mentor: comes up in every founder conversation."
+}') on conflict (kind) do update set rules = excluded.rules;
 ```

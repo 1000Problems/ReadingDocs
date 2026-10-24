@@ -1,48 +1,36 @@
 # Reading — the manual for your AI
 
-Reading is a library you never type into. You tell your AI about books; it adds them, writes a short note on why each one matters to you, ranks them with your own system, and writes descriptions, drill cards and author pages when you ask. You read the result at **https://reading.hadmoney.com**.
+Reading is a private library that your AI keeps for you. Your books, notes, shelves and ranking live in **your own space**
+on BYOAI Studio (`db.byoaistudio.com`). The site, `reading.hadmoney.com`, renders only what your AI writes there.
 
-This repo is Markdown only. It is for the AI. There is no code to install, no MCP server, no plugin.
+This repo is Markdown only. If you are an AI: read it in this order.
 
-## Two sources, read both
-- **This repo** says what things *mean* and how to do the jobs.
-- **`GET /describe`** says what your database *looks like right now*: tables, columns, checks, row counts, examples. Read it first in every new session. Its `repo_sha:` line is the commit of this repo it matches; if yours is older, pull.
-
-Where they disagree, `/describe` wins for names and shapes, this repo wins for meaning. Report the disagreement to the user.
+1. [START.md](START.md) — the first session: build this person's Reading from what you already know about them.
+2. [BOOKS.md](BOOKS.md) — adding a book: look it up, write the short note, pick shelf and niche.
+3. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
 
 ## Connect (once)
-1. The user signs in at **https://db.byoaistudio.com** and copies the connect code from their space (works once, 10 minutes).
-2. Trade it for a key:
-   ```
-   curl -s -X POST https://db.byoaistudio.com/connect -H 'content-type: application/json' \
-     -d '{"code": "4F7K-2M", "name": "<user>'"'"'s Claude (Cowork)"}'
-   ```
-   Line 1 of the reply is the key (`byoai_…`). The rest is `/describe`.
-3. Keep the key private: a file in the project (`byoai-key.txt`), never in chat, never in a commit.
 
-**One key per space.** It sees every app the user has turned on, so you can answer questions across apps. The user can disconnect it on their space page at any time.
+1. The user signs up at https://db.byoaistudio.com and copies the connect code from `/space` (6 characters, 10 minutes, one use).
+2. You call:
+   ```
+   curl -s -X POST https://db.byoaistudio.com/connect \
+     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Claude"}'
+   ```
+   Line 1 is your key (`byoai_…`). Keep it. The rest is `/describe`.
+3. Every later request: `Authorization: Bearer <key>`.
 
 ## Work
-Base URL `https://db.byoaistudio.com`. Header `Authorization: Bearer <key>` on every call.
 
-| Call | What |
-|---|---|
-| `GET /describe` | the live shape of the user's data |
-| `POST /sql` | body = plain SQL. Reads and writes. One request = one transaction = one change |
-| `POST /sql?dry_run=1` | runs, then rolls back. Use it before a bulk change |
-| `GET /history?limit=20` | one line per change |
-| `POST /undo {"change_id": "…"}` | undoes one change (refused if a later change touched the same rows) |
+- `GET /describe` — the live shape: tables, columns, rules, examples. Read it at the start of each session.
+  It names this repo and the commit (`repo_sha`) it was tested against.
+- `POST /sql` with a plain-text body — one or more statements, one transaction, one change. Results come back as TSV.
+- `GET /history`, `POST /undo` — every request is one change you can undo.
+- Errors are one plain-text line. Read it; it usually says the fix.
 
-Errors are one plain-text line. Read it, fix the SQL, retry. Don't retry the same SQL unchanged.
+Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. No DDL.
 
-You write bare table names (`books`, `notes`). You never see other users and never need a user id.
+## Two tables that guide you
 
-## Pages
-| Page | When |
-|---|---|
-| [START.md](START.md) | the first session with a new user |
-| [BOOKS.md](BOOKS.md) | "I want to read X", adding any book |
-| [RANKING.md](RANKING.md) | setting up the user's ranking, scoring books |
-| [SAFETY.md](SAFETY.md) | always. Read it once per session |
-
-Every how-to page ends with **Exact SQL**: blocks that run as written on an empty space. They are tested against the schema at the pinned commit.
+- `select * from rules` — the active rules per kind (book note, ranking, …): the user's own, or the default.
+- `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
