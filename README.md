@@ -66,9 +66,23 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 | `/review` | drill cards |
 | `/news` | news about their authors |
 
-Pages refresh when the reader reloads (**PROPOSED — needs server change:** changed sections refresh by themselves,
-highlighted). When you finish a step they will enjoy, give them the link; after a section change, link straight to it
-(`/books/<slug>#<section_id>`, also PROPOSED: see [PAGES.md](PAGES.md), *Write, then shape*).
+An open book or author page refreshes by itself within a few seconds of a change and highlights what changed.
+
+## A link with every change
+
+The reader wants to see what you did, not read about it. Every message that reports a change ends with the link to
+where it shows:
+
+- **A book added:** the book page and its shelf: `reading.hadmoney.com/books/<slug>` and
+  `reading.hadmoney.com/shelves/<shelf slug>`. Several books at once: the shelf, or the home page.
+- **A section written or changed:** straight to that section, `/books/<slug>#<section_id>` or
+  `/authors/<slug>#<section_id>` (the page jumps there and highlights it).
+- **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; ranking → `/` (the books
+  re-sort); author facts → `/authors/<slug>`; new drill cards → `/review`.
+
+Never link to a page where nothing visible changed. `/review` only when new cards are due there; the home page only
+when its order or shelves changed. One link is better than three; two only when both changed (a new book and its
+shelf).
 
 ## Shared facts
 
@@ -100,6 +114,9 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the reader's own, or the default.
 - `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
+- `select id, at, what from your_changes where new` — what the reader changed on the site since you last looked
+  (a look, a new section). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
+  on the site*).
 - `select * from hints` — suggestions to offer the reader when thresholds are reached.
 
 ## The reader's goal
@@ -120,16 +137,13 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
 3. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
 4. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
-5. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
-   - **Live refresh:** an open book or author page redraws changed sections by itself and highlights them for a
-     moment, so the reader keeps it open beside the chat while you shape it.
-   - **Section anchors:** each section gets `id="<section_id>"`, so `/books/<slug>#cheat_sheet` jumps to it.
-   - **Word caps shown:** each section's `max_words` in the `rules` or `pages` view, so the AI drafts to the cap
-     instead of learning it from a refused write.
-6. Large libraries ([IMPORT.md](IMPORT.md)):
+5. ~~Section look, dropped sections, preview, live refresh, anchors, word caps~~ **live 10-24**: see
+   [PAGES.md](PAGES.md), *Choosing your reader's design*.
+6. A live "your AI is writing…" signal on the site, so the reader watches pages build as you write.
+7. Large libraries ([IMPORT.md](IMPORT.md)):
    - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
      cards today);
    - dedupe on `isbn` (today only the same title + first author is refused);
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
    - site speed checked at 2,000+ books: home page, shelf page, search.
-7. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.
+8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.

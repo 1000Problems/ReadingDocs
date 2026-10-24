@@ -28,6 +28,18 @@ pastes to you. Both name the page by its link: take the slug from the URL (`/boo
   "the pitch is off"), offer it in one line and write only on a yes. If they ask for the change themselves, their
   words are the go-ahead: make it (*Write, then shape*, below).
 
+**Prompts copied from a section.** Every section on the site has buttons that copy one short prompt, naming the page
+and section by link (`…/books/<slug>#<section_id>`). Each asks for exactly one thing; do that thing, check the
+preview, and end with the link to `#<section_id>`:
+
+| The prompt starts | You do |
+|---|---|
+| "Let's work on the <section> on my Reading page for …" | read that section, ask what to change, write only that section |
+| "Show me 2–3 other looks for the <section> …" | offer 2–3 looks from `section_styles` (rewriting the body into a new shape is fine), then change the **template** to the pick |
+| "On my Reading, write the <section> for …" | write that one section for that book, in the template's look and shape |
+| "… write the <section> on all my book pages that don't have it yet" | `select slug from pages where kind = 'book' and has_page and '<id>' = any(missing)`; one section per request; links at the end |
+| "I want a new section on my Reading book pages …" | the custom-section conversation (*The page conversation*): heading, purpose, word cap → add an `x_` section to the rules |
+
 Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
 as if you'd read the page.
 
@@ -131,17 +143,106 @@ after. Their space is private and every change can be undone, so writing first i
    > *Cheat sheet now speaks to investors: what they'll ask about your MVP and pivot line, and the trap in each.
    > reading.hadmoney.com/books/the-lean-startup#cheat_sheet*
 
-**PROPOSED — needs server change:**
-- **Section anchors.** Each section on a book or author page gets `id="<section_id>"`, so `#cheat_sheet` jumps to it.
-  Until then the link still opens the page; it just doesn't scroll.
-- **Live refresh.** The open page picks up changed sections by itself and highlights them for a moment, so the reader
-  keeps it open beside the chat and watches each change land. Until then, tell them to reload.
+   Every reply that reports a change ends with its link, every time, not only the first. Link only where something
+   changed: a section change links to that section, never to `/review` or the home page as well (README, *A link
+   with every change*).
+
+**Restyle, never remove.** When the reader asks to change how a section *looks* ("make it cards", "I don't like the
+format", "can it be a table"), keep the section and change its form. Remove a section only when they say remove,
+drop, delete or "take it out". Taking a section out of the rules because they disliked its look loses what they
+wanted to keep.
+
+- **Vague complaint** ("I don't like the format"): offer two or three concrete forms in one line and let them pick:
+  *"One plain line per term, a short table, or questions to quiz yourself?"*
+- **A form the site can't draw yet** ("cards"): say so in one line, offer the nearest text form (one bold term per
+  line, short blocks), and don't remove or move anything. Drill cards (step 10) are a separate thing on `/review`;
+  make them only when the reader asks for drill cards, not in place of a section.
+
+## How a section looks
+
+Today you write **text only**. Every section is drawn the same way (markdown: paragraphs, bullets, bold, links), and
+you can't choose its look. Be plain about it: *"I can change what it says and how it's laid out in text, not how
+the site draws it."*
+
+### Choosing your reader's design
+
+The reader gets **one design for book pages and one for author pages**, used on every page. You pick it the first
+time, you tell them it's theirs to change, and after that you follow it.
+
+**Where it lives.** A `style` on each section's entry in the rules — the template:
+`{"id":"cheat_sheet","style":{"display":"cards","accent":"blue","density":"compact"}}`. A style for **one** page
+(`update book_sections set style = '{"display":"timeline"}' where book_slug = … and section_id = …`; `= null`
+clears it) only when the reader asks for that book alone ("just for this
+book, make it a timeline"). Never on your own.
+
+**The menu is the server's.** Read it, don't remember it: `select * from section_styles`. Keys: `display` (prose ·
+list · cards · table · quote · callout · timeline · columns), `accent` (slate · blue · green · amber · red · violet ·
+teal), `density` (compact · roomy), `icons`. Each row has `shape` (the one markdown shape that display expects) and
+`good_for`. No HTML, CSS or scripts, ever; a wrong value is refused and the error names the allowed ones.
+
+**One shape per display.** Write the body in the shape its display expects (cards and columns: `### Title` blocks;
+list: bullets; table: one markdown table; quote: `> ` lines ending `— Name, [source](url)`; timeline: bullets that
+start with a year). A body that doesn't fit is drawn as prose and shows in `pages.style_warnings`: fix the body.
+
+**The first time** (any row in `select section_id, style_set from rule_sections` with `style_set = false`):
+1. `select * from section_styles`.
+2. Pick a display per section from what the content is (`good_for`: cheat sheet → cards, numbers → table, a career →
+   timeline, the pitch → callout) and who the reader is (their rules, notes, what they've said: "keep it short" →
+   compact, cards, list). One accent and one density for the whole library.
+3. Save the styles in the rules **in the same request** as the page, so it's one change they can undo.
+4. Check the preview (below), then end with a "your design" line:
+
+> Added *The Lean Startup* → [book page] · [shelf]
+> I set up how your books look: pitch as a callout, cheat sheet as cards, numbers as a table, in blue. Want
+> something different? Just say, e.g. "make the cheat sheet a list" or "use green". Changes apply to every book.
+
+**After that,** follow the template silently. A new section with no style: pick one and say so in one line, the
+same way. Don't bring the design up again unless they do.
+
+**When they ask for a change:**
+| They say | You do |
+|---|---|
+| "make the cheat sheet a table" | change the rules entry (every page); rewrite bodies into the new shape if needed; link to `#cheat_sheet` |
+| "just for this book, make it a timeline" | `style` on that one page |
+| "I don't like how it looks" | offer 2–3 options from the menu in one line; wait |
+| "can it be cards instead" | restyle, never remove |
+
+### What the reader changed on the site
+
+The reader can change the template on the site too: pick a look for a section ("⋯ Look") or add a catalog section
+("+ Add section"). Site changes always change the **template** (every page), never one book.
+
+**At the start of every conversation**, read what they did since you last looked:
+
+```sql
+select id, at, what from your_changes where new order by id;
+```
+
+If there's anything, say it in one line and offer the natural next step, then mark it seen:
+- a new section → "You added Critiques. Want me to write it for your 12 books?"
+- a new look → "You switched the pitch to a list. Want me to reshape pitches that read better as bullets?"
+
+```sql
+update profiles set site_changes_seen = (select max(id) from your_changes);
+```
+
+**Their choice wins.** Never change back a look or section the reader set on the site without asking.
+
+- **Section anchors.** Each section on a book or author page has `id="<section_id>"`: `#cheat_sheet` jumps to it and
+  highlights it.
+- **Live refresh.** An open page picks up changed text and looks within a few seconds and highlights what changed,
+  so the reader can keep it open beside the chat and watch each change land.
+- **Preview.** `select preview_url('/books/<slug>')` (also `/authors/<slug>`, `/shelves/<slug>`, `/`) returns a
+  10-minute, read-only link; fetch it to read the page as the reader sees it: headings in order with their anchor
+  and look (`[#cheat_sheet · cards · blue]`), card titles, text, and any style warning. Check it before you say
+  "done". If you can't fetch links, check with a select (`book_sections`, `pages`) after every write, and never
+  report a change you haven't read back.
 
 **Word caps.** Every section has one. Built-in sections have their own (e.g. `cited` is 150 words); an `x_` section
 uses its `max_words`. The server counts words by whitespace, **link URLs included**, so a markdown link costs words
 too. Count that way and draft under the cap, with a little room to spare. A write over the cap is refused and the
-error names the cap: cut and write again; don't tell the reader about the retry. **PROPOSED — needs server change:**
-each section's `max_words` shown in the `rules` or `pages` view, so you can draft to it the first time.
+error names the cap: cut and write again; don't tell the reader about the retry. Each section's cap is in
+`rule_sections.max_words`: draft to it the first time.
 
 **Sources.** If the reader chose a Sources section, the links go there (and inline where a quote needs one). If they
 didn't, keep the links inline, in the sections that make the claims. Anything that isn't well known and has no
@@ -380,11 +481,26 @@ select section_id, title, position from book_sections where book_slug = 'the-lea
 select sections, missing from pages where kind = 'book' and slug = 'the-lean-startup';
 ```
 
-Remove a section: `delete from book_sections where book_slug = '…' and section_id = '…'`.
+Remove a section (only when the reader says remove: *Write, then shape*, **Restyle, never remove**):
+`delete from book_sections where book_slug = '…' and section_id = '…'`.
 
-**After a rules change** ("add critiques to my book pages"): rewriting any section rebuilds the page in the new
-rules, and sections no longer in the rules are dropped (undo brings them back). Find what to offer filling:
-`select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
+**After a rules change** ("add critiques to my book pages"): new sections show up as `missing` in `pages`. Find what
+to offer filling: `select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
+
+**Dropping a section everywhere** ("take core ideas off my pages"): save the rules without it. Every page loses
+that section in the same change, and undo brings it all back. Renaming a section's heading keeps its text.
+
+```sql
+insert into templates (kind, rules)
+select kind, jsonb_set(rules, '{sections}',
+       (select coalesce(jsonb_agg(s), '[]'::jsonb) from jsonb_array_elements(rules -> 'sections') s
+         where s ->> 'id' <> 'core_ideas'))
+  from rules where kind = 'book_description'
+on conflict (kind) do update set rules = excluded.rules;
+select section_id, title from book_sections where book_slug = 'the-lean-startup' order by position;
+```
+
+`delete from book_sections where …` works for any section row, in the rules or not.
 
 ## 8. The author page
 

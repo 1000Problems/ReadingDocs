@@ -70,15 +70,21 @@ they haven't seen.
 
 ## 3. Build it in scenes
 
-Each scene is one request (one change they can undo) and ends with a link. Tell them what to open, then go on.
+Each scene is one request (one change they can undo) and ends with a link to where it shows (README, *A link with
+every change*). Tell them what to open, then go on.
 
 **Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
+
+Shelf name and ranking on a first add: if the reader only said "add this book" and you don't know enough to plan
+shelves, name the home shelf yourself from what you know and **show** it, don't ask: one line in the plan, or right
+after the add (*"I called your shelf "Catching up"; rename it anytime. Scores use the default ranking until you tell
+me what makes a book worth your time."*).
 
 Adding books is fast; pages come after, the way the reader wants them. Don't write a page, search the web for news
 or write an author page until the reader has said what they want to see.
 
 **Scene 2 — the first book.** [BOOKS.md](BOOKS.md): the row, the note, the score, in one request, in under a minute.
-Link: `/books/<slug>`. Make the note speak to their goal and to what they've actually told you. Never invent a detail
+Links: the book page and its shelf, `/books/<slug>` and `/shelves/<shelf slug>`. Make the note speak to their goal and to what they've actually told you. Never invent a detail
 about them to sound personal.
 
 **Scene 3 — what they want to see.** Ask the page question once ([PAGES.md](PAGES.md), *The page conversation*),

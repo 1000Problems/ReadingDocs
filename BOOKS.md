@@ -36,7 +36,16 @@ shelf covers the same ground), `why_read` (the reader's own reason only, never y
 
 ## After the add
 
-Give the link (`reading.hadmoney.com/books/<slug>`). If the reader has no page rules yet
+Give two links: the book page and the shelf it's on (`reading.hadmoney.com/books/<slug>` and
+`reading.hadmoney.com/shelves/<shelf slug>`). You did a lot of work in one request; the reader should see it. Every
+later change gets its own link too (README, *A link with every change*).
+
+**The first add on an empty space** (no plan agreed yet, or the reader only said "add this book"): say in the same
+message, in one line each, the shelf name you chose and that scores use the default ranking until they tell you what
+makes a book worth their time. The shelf name is shown, not asked: *"I called your shelf "Catching up"; rename it
+anytime."* They correct it in plain words.
+
+If the reader has no page rules yet
 (`select source from rules where kind = 'book_description'` says `default`), ask the page question once
 ([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line with their sections: *"Want
 its page? Same sections: pitch, how people cite it, connections, cheat sheet?"* On a yes, write the whole first pass
