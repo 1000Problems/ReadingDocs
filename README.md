@@ -19,7 +19,7 @@ needs:
 | First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
-| A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose |
+| A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): shaped with the reader, a section at a time |
 
 When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
 [RANKING.md](RANKING.md) (the reader's ranking, scoring), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf
@@ -50,6 +50,9 @@ Any AI that can send HTTPS requests can do this. Nothing here depends on one pro
 - `POST /sql` with a plain-text body — one or more statements, one transaction, one change. Results come back as TSV.
 - `GET /history`, `POST /undo` — every request is one change the reader can undo.
 - Errors are one plain-text line. Read it; it usually says the fix. Nothing in a failed request was written.
+- **Known bug:** in a request with several statements, a statement before the last that holds non-ASCII characters
+  (– — é …) can break parsing of the ones after it (`syntax error at or near …`). Write such text as `E'…\u2014…'`
+  escapes, or put it in the last statement.
 
 Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. No DDL.
 
@@ -114,16 +117,25 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
    table books link to by id replaces the view.
 2. `profiles.purpose` — one home for the reader's goal.
    Also: copy `shelves.sentence` ↔ `blurb` when one is empty, so the AI writes one line once.
-3. Custom book-page sections (e.g. any heading prefixed `x_`), so a page can have *Where it breaks now* or *Questions
-   to ask*.
-4. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
-5. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
+3. Fix: in a multi-statement `POST /sql`, non-ASCII characters (– — é) in a statement before the last break parsing
+   of the later ones (byte vs character positions, it seems). Workaround in *Work*.
+4. Pages shaped with the reader ([PAGES.md](PAGES.md)):
+   - custom sections: the reader's own sections in their rules (id, heading, purpose), allowed by the validator, so
+     a page can have *Where it breaks now* or *Questions to ask*;
+   - per-section writes: write or replace one section without resending the page, one undo each;
+   - a sketch state: an empty book or author page shows its facts and "This page is a sketch. Tell your AI what you
+     want from this book." The site renders it; no rows are written. It goes away once a section exists.
+5. A to-do list redesign: most work is now "shape this page?" offers. Caps, so 2,000 books don't make 2,000 items;
+   ranked by goal, currently reading first; done, snooze and skip; which items a scheduled run may do alone and which
+   it only offers.
+6. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
+7. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
-6. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
-7. Large libraries ([IMPORT.md](IMPORT.md)):
+8. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
+9. Large libraries ([IMPORT.md](IMPORT.md)):
    - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
      cards today);
    - dedupe on `isbn` (today only the same title + first author is refused);
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
    - site speed checked at 2,000+ books: home page, shelf page, search.
-8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.
+10. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.

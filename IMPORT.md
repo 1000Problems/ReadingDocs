@@ -36,7 +36,7 @@ write pages either. Work in passes, so the library appears in minutes and gets r
    reason for this reader). First 25, give the link, then up to 200 rows per request. Each request is one undo. One
    bad row fails its whole request, so clean the list first. Section 4 has the exact SQL.
 5. **Enrich best first.** Afterwards, a few books per request: notes and scores for the 5–10 that matter most to their
-   goal, pages (in their sections, after the page question) for the one or two they're most excited about. The rest on later sessions and scheduled runs
+   goal, pages (shaped with them, [PAGES.md](PAGES.md)) for the one or two they're most excited about. The rest on later sessions and scheduled runs
    ([DAILY.md](DAILY.md)).
 
 The rest of this page is the full method for a whole library.
@@ -202,7 +202,7 @@ then one `update … from (values …)` request.
 
 Everything starts on the home shelf. That's fine for day one: the site ranks it and search finds any book. Once the
 import is in, look at his most-used Goodreads shelves (now `tags`) and offer two to five topic shelves from them, in his
-words ([START.md](START.md), [PAGES.md](PAGES.md) step 2). Moving books onto them is a bulk update: show the
+words ([START.md](START.md), [BOOKS.md](BOOKS.md) step 3). Moving books onto them is a bulk update: show the
 counts and wait for a yes.
 
 ```sql

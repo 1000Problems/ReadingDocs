@@ -37,14 +37,16 @@ Draft their Reading:
 - **3–5 shelves** — the areas of their life where reading matters. Name them the way they talk ("Founder",
   "Spanish kitchen", "Raising Lucía"). Never "Books", "Main" or "General". One line each on what belongs there. One
   shelf is `home`.
-- **Niches** — 2–5 per shelf, the sub-topics they actually care about.
+- **Niches** — the sub-topics they actually care about. Start with the niches the first books need; more come
+  with books. A niche with no book is an empty heading on their site.
 - **A ranking** — how *they* decide a book matters. 2–6 factors from the catalog, weights summing to 100, named in
   their words ("Will a mentor ask?" beats "Importance"). See [RANKING.md](RANKING.md).
 - **The first book** — the one that will make them say "yes, that's me": a book they're reading, one they mentioned,
   or the obvious one for their goal. Then 4–9 more.
 
 Anything you don't know, ask; don't guess. If you know very little, say so plainly, draft what you can (the book
-itself is a clue), and ask for the rest in the plan. Their name: use it if you know it, otherwise ask. Never put the
+itself is a clue), and ask for the rest in the plan. Knowing little and starting from one book, one shelf named for
+that book is enough: don't pad the plan with guessed shelves or books. The rest come after their answers. Their name: use it if you know it, otherwise ask. Never put the
 handle or a guess in `display_name`.
 
 **They open with "add this book."** Plan it as the first book ([BOOKS.md](BOOKS.md)) on a shelf named for what the
@@ -66,8 +68,10 @@ goal, and keep the space's default until then.
 ## 3. Build it in scenes
 
 Each scene is one request (one change they can undo) and ends with a link. Tell them what to open, then go on.
+Reads don't count: run the scene's `select`s first, then put all its writes in one `POST /sql`.
 
-**Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
+**Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown),
+and removing the empty starter shelf *Books* if the plan said so. Link: `reading.hadmoney.com/`.
 
 Adding books is fast; pages come after, the way the reader wants them. Don't write a page, search the web for news
 or write an author page until the reader has said what they want to see.
@@ -76,10 +80,11 @@ or write an author page until the reader has said what they want to see.
 Link: `/books/<slug>`. Make the note speak to their goal and to what they've actually told you. Never invent a detail
 about them to sound personal.
 
-**Scene 3 — what they want to see.** Ask the page question once ([PAGES.md](PAGES.md), *The page conversation*), save
-their answer as their page rules, then build **this one** book page in those sections. Link: `/books/<slug>` again,
-now with its page. This is the page they'll judge you by. Offer the author page the same way (*"Want a page for Eric
-Ries?"*); build it only on a yes.
+**Scene 3 — make it theirs.** This is the wow. Ask *"Want to make this page yours?"* and shape **this one** book
+page with them, a section at a time: offer a few sections that fit their goal, draft each in chat, revise until they
+say yes, write it, give the link ([PAGES.md](PAGES.md), *The page conversation*). Each write is one change they can
+undo. Their choices become their page rules. Then offer the author page the same way (*"Want to make Eric Ries's
+page yours?"*); its fresh search happens then, only on a yes.
 
 **Scene 4 — the rest of the shelf.** The other books, the same fast add, all in one request, no pages. Link: the home
 page again, now ranked. Their pages wait until they ask, or until they start reading one. If one niche now has two authors, write its playbook
@@ -100,23 +105,27 @@ Then `select * from todo order by priority` and offer what's waiting in one line
 
 ## Exact SQL
 
-Scene 1, one request. A new space already has a home shelf `books`; unset it first. `blurb` is the line the site shows
-under a shelf; `sentence` is the same line for other AIs. Write both.
+Scene 1, one request. A new space already has an empty home shelf `books` ("Books"), the name this page says never to
+use. Your plan says you'll remove it ("I'll remove the empty starter shelf *Books*"); their yes to the plan is the yes
+to that delete (SAFETY.md). If they say no, leave it and only unset `home`. If it has books, never delete it: ask.
+`blurb` is the line the site shows under a shelf; `sentence` is the same line for other AIs. Write both.
 
 ```sql
 update shelves set home = false where home;
+-- the server makes the profile row on the first write, so a plain update is enough
 update profiles set display_name = 'Maya';
-insert into profiles (display_name) select 'Maya' where not exists (select 1 from profiles);
 insert into shelves (slug, name, position, home, blurb, sentence, niches) values
   ('founder', 'Founder', 0, true,
    'Books the AI founders I advise expect me to have read.',
    'Books the AI founders I advise expect me to have read.',
-   '[{"id":"idea","label":"Idea and validation","sentence":"Testing whether anyone wants it before building it."},
-     {"id":"people","label":"People","sentence":"Hiring, managing, firing."}]'),
+   '[{"id":"idea","label":"Idea and validation","sentence":"Testing whether anyone wants it before building it."}]'),
   ('kitchen', 'Spanish kitchen', 1, false,
    'Cooking from home, proportions right.', 'Cooking from home, proportions right.', '[]')
 on conflict (slug) do update set home = excluded.home, blurb = excluded.blurb,
   sentence = excluded.sentence, niches = excluded.niches;
+
+-- the empty starter shelf, only if the plan said so and it has no books
+delete from shelves where slug = 'books' and not exists (select 1 from books where shelf = 'books');
 
 -- the goal: merged into the active book_note rules, so the other settings stay
 insert into templates (kind, rules)

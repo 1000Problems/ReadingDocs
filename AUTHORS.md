@@ -33,7 +33,8 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 ## News
 1. Read first: `select url, headline, kind, published_on from author_articles where author_slug = '<slug>'`
    and `select * from news where author = '<slug>'`.
-2. Search the web (last 12 months) **always before an author's first page** (no `summary`, no `news_checked_at`).
+2. Search the web (last 12 months) **when an author's first page is shaped** (no `summary`, no `news_checked_at`),
+   never on add.
    After that, only if `todo` lists `author_check:<slug>`. It does only for authors with a page.
 3. Store finds in `author_news` (`on conflict (url) do nothing`). `author_id` is the main author; `news_authors` adds the
    others, `news_books` the books it's about. Then
