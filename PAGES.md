@@ -39,17 +39,30 @@ select kind, chapter, body from notes where book_id = (select id from books wher
 ## The page conversation (once)
 
 Before the first page, unless they already have page rules (`select source from rules where kind =
-'book_description'` says `yours`), ask once, in one message, and offer what a page can hold:
+'book_description'` says `yours`), ask once, in one message. **Number every option** so they can answer with numbers
+("2, 5, 1"), in the order they want. Say which sections are always on the page, give each option one line written for
+this book or author, and end with the way to add their own:
 
-> *Want a page for it? Pick what you'd like to see: the 30-second pitch, core ideas, frameworks, how people cite it,
-> critiques, connections to other books, what to watch for while reading, a cheat sheet for conversations.*
+> *This is your first book page, so what you pick becomes the format for every book after it. The pitch, core ideas
+> and sources are always on it. Which of these do you want too? Reply with numbers, in the order you want them.*
+> 1. *Frameworks: the named tools in the book, one line each.*
+> 2. *How people cite it: what founders mean when they drop it into a conversation.*
+> 3. *Critiques: where people push back.*
+> 4. *Connections: the other books it talks to.*
+> 5. *Watch for while reading: what to notice.*
+> 6. *A cheat sheet: what to say, why, and the trap.*
+> 7. *Something of your own: tell me what, e.g. "where it breaks for AI startups".*
+
+Read their reply as numbers first ("1, 3, 6" or "3 then 1"), words second. Confirm the order in one line before
+saving.
 
 Their answer becomes their page rules, saved once and used for every book. The pitch, core ideas and sources are
 always included (the database requires them). Order = the order they named, required ones where they fit.
 "Add critiques to my book pages" later → change the rules, and offer to redo existing pages.
 
-The same once for authors, before the first author page: *who they are, how to remember them, big ideas, their
-books, how people talk about them, critiques, a cheat sheet* (who, big ideas and sources are always included).
+The same once for authors, before the first author page, numbered the same way: *1. how to remember them, 2. their
+books, 3. how people talk about them, 4. critiques, 5. a cheat sheet, 6. something of your own* (who they are, big
+ideas and sources are always included).
 
 **Sections of their own.** If they want something the list doesn't have ("where it breaks for AI startups", "who
 quotes it now", "questions to ask a founder"), add it to their rules: an id starting `x_`, the heading they'll see,
