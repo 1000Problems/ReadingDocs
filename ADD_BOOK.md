@@ -367,9 +367,8 @@ values ('founder', 'idea', 'Idea and validation', '…one sentence: why this nic
 on conflict (shelf, niche) do update set body = excluded.body, title = excluded.title, headline = excluded.headline;
 ```
 
-With one book and one author the story is thin: write *Where to start* only after asking, or wait for the second
-author. Links to authors or books that aren't on the shelf go in the book page's *Connections*, not in `book_links`
-or `pairs`.
+With one book and one author there is nothing to link yet. Wait for the second author, and for `todo` to ask for
+the story.
 
 **PROPOSED — needs server change:** suggested links: a read-only view that lists commons books/authors related to
 the new one (e.g. same commons article, overlap) so the AI can propose "add The Startup Owner's Manual?".
