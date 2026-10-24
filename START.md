@@ -78,6 +78,7 @@ their goal and to what they've actually told you. Never invent a detail about th
 **Scene 4 — the rest of the shelf.** The other books, quick add ([BOOKS.md](BOOKS.md)), each with a note and a score,
 in one request. Link: the home page again, now ranked. If one niche now has two authors, write its playbook
 ([PLAYBOOK.md](PLAYBOOK.md)).
+If you saved the two book questions for later, ask them here, with the first book on screen.
 
 ## 4. The reveal
 
