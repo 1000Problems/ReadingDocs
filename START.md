@@ -105,8 +105,8 @@ the line the site shows under a shelf; `sentence` is the same line for other AIs
 
 ```sql
 update shelves set home = false where home;
+-- the server makes the profile row on the first write, so a plain update is enough
 update profiles set display_name = 'Maya';
-insert into profiles (display_name) select 'Maya' where not exists (select 1 from profiles);
 insert into shelves (slug, name, position, home, blurb, sentence, niches) values
   ('founder', 'Founder', 0, true,
    'Books the AI founders I advise expect me to have read.',
