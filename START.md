@@ -44,7 +44,9 @@ Draft their Reading:
   or the obvious one for their goal. Then 4–9 more.
 
 Anything you don't know, ask; don't guess. If you know very little, say so plainly, draft what you can (the book
-itself is a clue), and ask for the rest in the plan. Their name: use it if you know it, otherwise ask. Never put the
+itself is a clue), and ask for the rest in the plan. Knowing little and starting from one book, one shelf named for
+that book is enough: don't pad the plan with guessed shelves or books. The other shelves and the 4–9 more come after
+their answers. Their name: use it if you know it, otherwise ask. Never put the
 handle or a guess in `display_name`.
 
 **They open with "add this book."** Plan it as the first book: a full add (ADD_BOOK.md) on a shelf named for what the
@@ -66,6 +68,8 @@ goal, and keep the space's default until then.
 ## 3. Build it in scenes
 
 Each scene is one request (one change they can undo) and ends with a link. Tell them what to open, then go on.
+Reads don't count: run the scene's `select`s first, then put all its writes in one `POST /sql`. ADD_BOOK lists each
+step as its own request; in a scene, join them (step 4's `update` can follow step 3's `insert` in the same request).
 
 **Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
 
@@ -94,8 +98,10 @@ Then `select * from todo order by priority` and offer what's waiting in one line
 
 ## Exact SQL
 
-Scene 1, one request. A new space already has a home shelf `books`; unset it first. `blurb` is the line the site shows
-under a shelf; `sentence` is the same line for other AIs. Write both.
+Scene 1, one request. A new space already has an empty home shelf `books` ("Books"), the name this page says never to
+use. Your plan says you'll remove it ("I'll remove the empty starter shelf *Books*"); their yes to the plan is the
+yes to that delete. If they say no, leave it and only unset `home`. If it has books, never delete it: ask. `blurb` is
+the line the site shows under a shelf; `sentence` is the same line for other AIs. Write both.
 
 ```sql
 update shelves set home = false where home;
@@ -111,6 +117,9 @@ insert into shelves (slug, name, position, home, blurb, sentence, niches) values
    'Cooking from home, proportions right.', 'Cooking from home, proportions right.', '[]')
 on conflict (slug) do update set home = excluded.home, blurb = excluded.blurb,
   sentence = excluded.sentence, niches = excluded.niches;
+
+-- the empty starter shelf, only if the plan said so and it has no books
+delete from shelves where slug = 'books' and not exists (select 1 from books where shelf = 'books');
 
 -- the goal: merged into the active book_note rules, so the other settings stay
 insert into templates (kind, rules)

@@ -6,7 +6,8 @@ Adding a book is more than one row. A full add leaves the reader with a book pag
 that author, and a place on a shelf next to the books and authors it talks to, all written for this reader. The
 example reader is Maya, who advises early-stage AI founders.
 
-Every step below is **one request** (one transaction, one change you can undo). Run them in order. If a step fails,
+Every step below is **one request** (one transaction, one change you can undo). Run them in order. In a first
+session, START groups steps into scenes: join a scene's writes into one request. If a step fails,
 the error is one line and usually names the fix; nothing in that step was written.
 
 | # | Step | When |
@@ -58,7 +59,7 @@ select slug, title, author, shelf, niche, status from books where title ilike '%
 select * from search('lean startup');
 select isbn13, title, authors, cover_url, kindle_asin, year, pages, checked_at
   from book_facts where isbn13 = '9780307887894' or title ilike '%lean startup%';
-select slug, name, site, wikipedia, checked_at from author_facts where slug = 'eric-ries';
+select slug, name, site, wikipedia, photo_url, checked_at from author_facts where slug = 'eric-ries';
 select url, headline, source, kind, published_on from author_articles where author_slug = 'eric-ries'
   order by published_on desc;
 select id, slug, name, news_checked_at from authors where slug = 'eric-ries';
