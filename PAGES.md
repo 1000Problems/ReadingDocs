@@ -20,12 +20,13 @@ pastes to you. Both name the page by its link: take the slug from the URL (`/boo
 
 - **"Let's shape my Reading page for … Follow ReadingDocs PAGES.md: before writing anything, ask me what I want to
   see on this page."** The page is a sketch (no page yet). Start with the page question: if they have no page rules,
-  *The page conversation* below; if they do, show their sections in one line and ask whether this page wants the same
-  or something different. Then build it section by section (step 7 or 8), with the link after each.
+  *The page conversation* below; if they do, show their sections in one line and ask "same?". Then write the whole
+  first pass and shape it with them (*Write, then shape* below).
 - **"Let's talk about … on my Reading … Read the page and my notes from my Reading first. My question: …"** The page
   exists. Read it (`book_sections` / `author_sections`) and the reader's notes before answering; answer from them
   first and say when something comes from beyond them. If the answer suggests a change ("add a critiques section",
-  "the pitch is off"), offer it in one line and write only on a yes.
+  "the pitch is off"), offer it in one line and write only on a yes. If they ask for the change themselves, their
+  words are the go-ahead: make it (*Write, then shape*, below).
 
 Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
 as if you'd read the page.
@@ -56,8 +57,12 @@ each option one line written for this book or author, and end with the way to ad
 > 9. *Sources: the links behind the page.*
 > 10. *Something of your own: tell me what, e.g. "where it breaks for AI startups".*
 
-Read their reply as numbers first ("1, 3, 6" or "3 then 1"), words second. Confirm the order in one line before
-saving.
+Read their reply as numbers first ("1, 3, 6" or "3 then 1"), words second. Say the order back in one line as you
+save it (*"Saving: pitch, how people cite it, connections, cheat sheet."*). No separate confirm: the save can be
+undone.
+
+**Later pages** don't get the question again. Show their sections in one line and ask *"Same?"* A yes, or "same",
+goes straight to the first pass.
 
 Their answer becomes their page rules, saved once and used for every book: exactly the sections they picked, in the
 order they named. Nothing else.
@@ -88,6 +93,59 @@ insert into templates (kind, rules) values
   ('author_page', '{"sections": [{"id":"who"},{"id":"remember"},{"id":"big_ideas"},{"id":"how_people_talk"},{"id":"sources"}], "note": ""}')
 on conflict (kind) do update set rules = excluded.rules;
 ```
+
+**A section that needs facts about the reader** ("how to apply it to my AI company") can't be written well without
+them. Ask once for the missing fact (*"What are you building? A sentence is plenty."*) and save the answer into the
+goal note in the `book_note` rules (merge, as [START.md](START.md) shows), so every later book uses it and nobody asks
+again. No answer yet → write a general version, and say in your one message that it gets sharper once they tell you.
+
+```sql
+insert into templates (kind, rules)
+select kind, rules || jsonb_build_object('note', coalesce(rules ->> 'note', '') || ' Building: …their sentence, in their words…')
+  from rules where kind = 'book_note'
+on conflict (kind) do update set rules = excluded.rules;
+```
+
+## Write, then shape
+
+The reader wants to see their page on the site, not approve blocks of text in chat. So you write first and shape
+after. Their space is private and every change can be undone, so writing first is safe.
+
+1. **Research first**, only what needs it (step 6 for a new author; recent quotes for *How people cite it* or
+   *Critiques*). Run searches in parallel where you can.
+2. **Write the first pass of every chosen section straight to the site.** No drafts in chat. Each section is still
+   its own insert (one change, so each can be undone alone), but do them back to back without asking.
+3. **Send one message:** *"Your page is up"* with the link, then one line per section on what's there, then an
+   invitation to react in plain words (*"make the cheat sheet about investors"*, *"connections is too long"*). Example:
+   > *Your page is up: reading.hadmoney.com/books/the-lean-startup*
+   > - *Pitch: the book in five sentences, ending on why it matters more for AI founders.*
+   > - *How people cite it: what founders mean now by "lean", "MVP" and "pivot", with five sourced quotes.*
+   > - *Connections: four books, from The Startup Owner's Manual to Zero to One.*
+   > - *Cheat sheet: MVP, pivot and validated learning, for your talks with founders.*
+   >
+   > *Tell me what to change in your own words, like "make the cheat sheet about investors".*
+4. **Shaping.** Talk it through part by part. On each request, rewrite that section on the site (inserting it again
+   replaces it) and reply in one or two lines: what changed, then a link that jumps to it,
+   `reading.hadmoney.com/books/<slug>#<section_id>` (or `/authors/<slug>#<section_id>`). Never ask *"want me to add
+   it?"*: the reader's words are the go-ahead. If they dislike a change, undo it.
+   > *Cheat sheet now speaks to investors: what they'll ask about your MVP and pivot line, and the trap in each.
+   > reading.hadmoney.com/books/the-lean-startup#cheat_sheet*
+
+**PROPOSED — needs server change:**
+- **Section anchors.** Each section on a book or author page gets `id="<section_id>"`, so `#cheat_sheet` jumps to it.
+  Until then the link still opens the page; it just doesn't scroll.
+- **Live refresh.** The open page picks up changed sections by itself and highlights them for a moment, so the reader
+  keeps it open beside the chat and watches each change land. Until then, tell them to reload.
+
+**Word caps.** Every section has one. Built-in sections have their own (e.g. `cited` is 150 words); an `x_` section
+uses its `max_words`. The server counts words by whitespace, **link URLs included**, so a markdown link costs words
+too. Count that way and draft under the cap, with a little room to spare. A write over the cap is refused and the
+error names the cap: cut and write again; don't tell the reader about the retry. **PROPOSED — needs server change:**
+each section's `max_words` shown in the `rules` or `pages` view, so you can draft to it the first time.
+
+**Sources.** If the reader chose a Sources section, the links go there (and inline where a quote needs one). If they
+didn't, keep the links inline, in the sections that make the claims. Anything that isn't well known and has no
+source you opened is marked (unverified).
 
 ## Steps
 
@@ -304,14 +362,15 @@ shows both `mine` and `shared`. Check that after the write; if it doesn't, tell 
 
 ## 7. The book page
 
-In the reader's sections (*The page conversation*), **one section per request**, so the page grows while they watch
-and each section can be undone alone. Write the section, give the link, go on to the next. Order doesn't matter: the
-page is always rebuilt in their rules' order. Writing a section again replaces it.
+In the reader's sections (*The page conversation*), **one section per request**, so each can be undone alone. Write
+the first pass of all of them back to back, without asking, then send one message and shape (*Write, then shape*).
+Order doesn't matter: the page is always rebuilt in their rules' order. Writing a section again replaces it.
 
-Rules: only the reader's sections, and only those. A Sources section, when they chose one, needs at least one URL.
-Without one, still invent nothing: link the page you relied on in the text. Cheat-sheet blocks (`### topic` then **Say:** / **Why:** / **Trap:**)
-work in any section. No invented quotes; anything from memory marked (unverified). Use the news from steps 1 and 6:
-recent articles go in *How people cite it*, *Critiques* and *Sources*.
+Rules: only the reader's sections, and only those, each under its word cap. A Sources section, when they chose one,
+needs at least one URL. Without one, still invent nothing: link the page you relied on in the text (*Sources*,
+above). Cheat-sheet blocks (`### topic` then **Say:** / **Why:** / **Trap:**) work in any section. No invented
+quotes; anything from memory marked (unverified). Use the news from steps 1 and 6: recent articles go in *How people
+cite it*, *Critiques* and *Sources*.
 
 ```sql
 select rules from rules where kind = 'book_description';
@@ -330,7 +389,8 @@ rules, and sections no longer in the rules are dropped (undo brings them back). 
 ## 8. The author page
 
 The same, in the `author_page` rules: one section per request through `author_sections`, only the sections the
-reader picked. Full names, never surname only. Describe a face only after looking at the photo.
+reader picked, the whole first pass back to back, then one message and shaping (*Write, then shape*). Full names,
+never surname only. Describe a face only after looking at the photo.
 
 ```sql
 insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'who', '…');

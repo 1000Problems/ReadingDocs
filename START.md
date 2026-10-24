@@ -37,7 +37,7 @@ Draft their Reading:
 - **3–5 shelves** — the areas of their life where reading matters. Name them the way they talk ("Founder",
   "Spanish kitchen", "Raising Lucía"). Never "Books", "Main" or "General". One line each on what belongs there. One
   shelf is `home`.
-- **Niches** — 2–5 per shelf, the sub-topics they actually care about.
+- **Niches** — the sub-topics they actually care about. Make a niche only when a book goes into it; no empty ones.
 - **A ranking** — how *they* decide a book matters. 2–6 factors from the catalog, weights summing to 100, named in
   their words ("Will a mentor ask?" beats "Importance"). See [RANKING.md](RANKING.md).
 - **The first book** — the one that will make them say "yes, that's me": a book they're reading, one they mentioned,
@@ -63,6 +63,11 @@ ranking.
 If the goal is still unknown, don't guess a ranking: say in the plan that you'll set it once they've told you their
 goal, and keep the space's default until then.
 
+When you know little but have a goal, put the proposed ranking in the plan as one line they can correct: *Ranking:
+"Will a founder ask?": a founder I advise asks about it 50, comes up in their conversations 30, still read in ten
+years 20.* If the goal only arrives with their answers, say that line as you save it in scene 1. Never set a ranking
+they haven't seen.
+
 ## 3. Build it in scenes
 
 Each scene is one request (one change they can undo) and ends with a link. Tell them what to open, then go on.
@@ -76,10 +81,12 @@ or write an author page until the reader has said what they want to see.
 Link: `/books/<slug>`. Make the note speak to their goal and to what they've actually told you. Never invent a detail
 about them to sound personal.
 
-**Scene 3 — what they want to see.** Ask the page question once ([PAGES.md](PAGES.md), *The page conversation*), save
-their answer as their page rules, then build **this one** book page in those sections. Link: `/books/<slug>` again,
-now with its page. This is the page they'll judge you by. Offer the author page the same way (*"Want a page for Eric
-Ries?"*); build it only on a yes.
+**Scene 3 — what they want to see.** Ask the page question once ([PAGES.md](PAGES.md), *The page conversation*),
+save their answer as their page rules (say the order back as you save), then write the first pass of **this one**
+book page, every section, straight to the site. No drafts in chat. Then one message: *"Your page is up"*, the link,
+one line per section, and an invitation to react in plain words. Shape it from what they say ([PAGES.md](PAGES.md),
+*Write, then shape*). This is the page they'll judge you by. Offer the author page the same way (*"Want a page for
+Eric Ries?"*); build it only on a yes.
 
 **Scene 4 — more books, if they want.** Suggest 3–5 that fit their goal, in one line each. On a yes, the same fast
 add, all in one request, no pages. Link: the home

@@ -26,6 +26,8 @@ what to say about them in the reader's conversations.
 ## The page
 Only after the reader said yes to it, in their `author_page` rules ([PAGES.md](PAGES.md), *The page conversation*),
 one section per request through `author_sections`, only the sections they picked (a Sources section needs 1+ URL).
+Write the whole first pass back to back, no drafts in chat, then one message and shape it with them
+([PAGES.md](PAGES.md), *Write, then shape*).
 Full names. Describe a face only after looking at the photo. Use the author's news in *How people talk about them*.
 
 Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.

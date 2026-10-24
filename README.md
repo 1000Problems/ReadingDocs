@@ -19,7 +19,7 @@ needs:
 | First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
-| A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose |
+| A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose, written first, shaped after |
 | The reader pasted "Let's shape my Reading page for …" or "Let's talk about … on my Reading" | [PAGES.md](PAGES.md), *When the reader comes from the site* |
 
 When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
@@ -66,7 +66,9 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 | `/review` | drill cards |
 | `/news` | news about their authors |
 
-Pages refresh when the reader reloads. When you finish a step they will enjoy, give them the link.
+Pages refresh when the reader reloads (**PROPOSED — needs server change:** changed sections refresh by themselves,
+highlighted). When you finish a step they will enjoy, give them the link; after a section change, link straight to it
+(`/books/<slug>#<section_id>`, also PROPOSED: see [PAGES.md](PAGES.md), *Write, then shape*).
 
 ## Shared facts
 
@@ -119,6 +121,11 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
 4. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
 5. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
+   - **Live refresh:** an open book or author page redraws changed sections by itself and highlights them for a
+     moment, so the reader keeps it open beside the chat while you shape it.
+   - **Section anchors:** each section gets `id="<section_id>"`, so `/books/<slug>#cheat_sheet` jumps to it.
+   - **Word caps shown:** each section's `max_words` in the `rules` or `pages` view, so the AI drafts to the cap
+     instead of learning it from a refused write.
 6. Large libraries ([IMPORT.md](IMPORT.md)):
    - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
      cards today);
