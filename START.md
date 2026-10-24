@@ -18,9 +18,10 @@ If you can't tell which, ask one question: *"About how many books do you want on
 
 ## They already asked for a book
 
-Often the first thing a reader says is "add The Lean Startup", before any goal. Don't ask the goal as a separate
-question. Take it from the request and what you know ("You're reading startup books; I'll write for talking with
-founders") and put it in the plan in section 2 as one line they can correct. Make that book the first book.
+Often the first thing a reader says is "add The Lean Startup", before any goal. If you know them, take the goal from
+the request and what you know ("You're reading startup books; I'll write for talking with founders") and put it in
+the plan in section 2 as one line they can correct. If you don't know them, ask for the goal in the plan (section 2).
+Either way, make that book the first book, and write nothing until they've seen the plan.
 
 ## 1. Start from what you know
 
@@ -42,16 +43,17 @@ Draft their Reading:
 - **The first book** — the one that will make them say "yes, that's me": a book they're reading, one they mentioned,
   or the obvious one for their goal. Then 4–9 more.
 
-If you know very little, say so plainly and ask before drafting.
+Anything you don't know, ask; don't guess. If you know very little, say so plainly, draft what you can (the book
+itself is a clue), and ask for the rest in the plan. Their name: use it if you know it, otherwise ask. Never put the
+handle or a guess in `display_name`.
 
-**They open with "add this book."** Do it, and make it the first scene: a full add (ADD_BOOK.md) on a shelf named for
-what the book says about them. The book itself is a clue to their goal. Then show the rest of the plan and ask your
-one or two questions. Don't make them answer questions before they see something.
+**They open with "add this book."** Plan it as the first book: a full add (ADD_BOOK.md) on a shelf named for what the
+book says about them. Show the plan first (section 2), then build it in scenes.
 
 ## 2. Show the plan, ask at most two questions
 
-Show the draft in a few lines. Ask only what you can't infer, usually *"what are you reading now?"* and *"what makes
-a book worth your time?"*. Don't interview them. Then wait for a yes or for corrections. Their corrections are the
+Show the draft in a few lines. Ask only what you can't infer: their goal and their name if you don't know them,
+usually *"what are you reading now?"* and *"what makes a book worth your time?"*. Don't interview them. Then wait for a yes or for corrections. Their corrections are the
 best data you'll get: use their exact words in the shelf lines and the ranking.
 
 ## 3. Build it in scenes

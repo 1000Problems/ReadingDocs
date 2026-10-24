@@ -86,7 +86,7 @@ One rule, everywhere:
 
    Write it on the reader's own row. The weekly job adds covers and photos to the shared facts, so the next reader
    gets them.
-3. **Nothing found** → leave it empty. Never a guess, never another site (no Amazon, Google or Goodreads images).
+3. **Nothing found** → leave it empty. Never a guess.
 
 `news` and `shared_news` show only authors already in this space. Before you add an author, read `author_articles`
 directly: `select * from author_articles where author_slug = 'eric-ries'`.
