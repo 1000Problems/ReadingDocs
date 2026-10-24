@@ -7,6 +7,21 @@ is this person.
 The site renders only what you write. A blank shelf is a blank site; a generic note is a generic site. Every line
 you write is either about this reader or it shouldn't be there.
 
+## Two kinds of first session
+
+- **A reader who wants a few books to matter** (most readers): this page, from section 1.
+- **A reader who arrives with a library** (hundreds or thousands of books, a Goodreads export, photos of their
+  bookcases): connect, take their goal, then follow [IMPORT.md](IMPORT.md). Their first win is the whole library on
+  the site, correct; rich pages come later.
+
+If you can't tell which, ask one question: *"About how many books do you want on the site?"*
+
+## They already asked for a book
+
+Often the first thing a reader says is "add The Lean Startup", before any goal. Don't ask the goal as a separate
+question. Take it from the request and what you know ("You're reading startup books; I'll write for talking with
+founders") and put it in the plan in section 2 as one line they can correct. Make that book the first book.
+
 ## 1. Start from what you know
 
 Before asking anything, use what you already know: their work, goals, projects, the people they learn from, books or

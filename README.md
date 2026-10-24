@@ -15,17 +15,19 @@ This repo is Markdown only. If you are an AI, read it in this order:
 1. [START.md](START.md) — the first session: connect, draft their Reading from what you know, build it live.
 2. [DAILY.md](DAILY.md) — every session after: `todo`, the reader's reactions, keeping the site alive.
 3. [ADD_BOOK.md](ADD_BOOK.md) — the full add: book, author, news, book page, rank, shelf, playbook, cards.
-4. [BOOKS.md](BOOKS.md) — the quick add: one row, a note, a shelf.
-5. [AUTHORS.md](AUTHORS.md) — the author row, author page, recall cards and news.
-6. [PLAYBOOK.md](PLAYBOOK.md) — how the books and authors on a shelf connect.
-7. [RANKING.md](RANKING.md) — the reader's ranking and how to score a book.
-8. [COMMONS.md](COMMONS.md) — shared facts and news, found once for everyone.
-9. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
+4. [IMPORT.md](IMPORT.md) — a reader who arrives with a library: Goodreads export, spreadsheet, bookshelf photos.
+5. [BOOKS.md](BOOKS.md) — the quick add: one row, a note, a shelf.
+6. [AUTHORS.md](AUTHORS.md) — the author row, author page, recall cards and news.
+7. [PLAYBOOK.md](PLAYBOOK.md) — how the books and authors on a shelf connect.
+8. [RANKING.md](RANKING.md) — the reader's ranking and how to score a book.
+9. [COMMONS.md](COMMONS.md) — shared facts and news, found once for everyone.
+10. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
 
 ## Connect (once)
 
 The reader makes the account themselves, in their browser at https://db.byoaistudio.com. You never see or need
-their password. They give you a short prompt with a connect code (6 characters, 10 minutes, one use).
+their password. They give you a short prompt with a connect code (6 characters, 10 minutes, one use). Whatever the
+prompt lists, read this README and follow its reading order.
 
 1. Call:
    ```
@@ -98,3 +100,11 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
 5. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
 6. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
+7. Large libraries ([IMPORT.md](IMPORT.md)):
+   - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
+     cards today);
+   - dedupe on `isbn` (today only the same title + first author is refused);
+   - a documented size limit for one `POST /sql` body, so imports know their batch size;
+   - site speed checked at 2,000+ books: home page, shelf page, search.
+8. The connect prompt says "read the README and follow its reading order" instead of naming docs, so it never goes
+   stale.

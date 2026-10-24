@@ -27,6 +27,11 @@ the error is one line and usually names the fix; nothing in that step was writte
 **Quick add** = steps 0–5 and 11 ([BOOKS.md](BOOKS.md)). Cheap, so fifty books stays cheap. **Full add** = everything.
 The first book of a new reader is always a full add (START.md, scene 2). After that, ask once which they want.
 
+**Imports** (a Goodreads export, a spreadsheet, photos of bookcases): quick add is the default, trimmed further:
+step 1 in bulk, step 3 with facts and the reader's own fields only (no note; `note` can be null), no score until
+they have a ranking, no author rows until they ask or own several books by that author, step 11 at the end.
+Hundreds of rows per request, one approval for the whole import. See [IMPORT.md](IMPORT.md).
+
 ## 0. Know the reader
 
 Every note, angle, score and card is written for *this* reader. Read their goal first:
