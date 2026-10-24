@@ -19,7 +19,8 @@ their password. They give you a short prompt with a connect code (6 characters, 
    curl -s -X POST https://db.byoaistudio.com/connect \
      -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Reading"}'
    ```
-   Line 1 is your key (`byoai_…`). Keep it where only you can read it. The rest is `/describe`.
+   Line 1 is your key (`byoai_…`). Keep it where only you can read it. The rest is `/describe`;
+   its first line names the space (`space <handle> · …`). Tell the user the handle before you write anything.
 2. Every later request: `Authorization: Bearer <key>`.
 3. Then go to [START.md](START.md). Don't add books before the user has seen your plan.
 
