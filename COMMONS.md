@@ -49,7 +49,12 @@ You are the BYOAI commons job. Base URL https://db.byoaistudio.com, key in <file
 6. Report: authors checked, articles added, books added, anything you skipped and why.
 ```
 
-`kind` is one of news, article, interview, podcast, talk, award, upcoming. Times are UTC.
+`kind` is one of news, article, interview, podcast, talk, award, upcoming. The site shows `article` and `podcast`
+under **Articles** (something to sit down and read or hear: an essay, a review, an analysis, an opinion piece, a long
+profile, an episode) and everything else under **News** (something happened: a book released, a talk given, a prize,
+a funding round, an event coming up). An essay *by* the author, or a review *of* their book, is an `article`, not
+`news`. An `interview` stays `interview` (News) unless it's a long written or audio piece worth reading in full: then
+`article` or `podcast`. Times are UTC.
 Private `author_news.kind` accepts only news, interview, award, talk, upcoming; for an article or podcast use
 `kind = 'news'` and put `article` or `podcast` in `article_kind`.
 
