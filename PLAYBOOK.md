@@ -6,6 +6,11 @@ The Playbook is the shelf told as a story: who taught whom, where they disagree,
 It shows on `reading.hadmoney.com/authors`; each pair has its own page at `/connections/<pair>`. Only books and
 authors **on this reader's shelf** get links. Everything else goes in a book page's *Connections*.
 
+On a large library ([IMPORT.md](IMPORT.md)), niches are the separation layer inside a shelf: a series or a world, or
+mind vs society vs body. The import keeps few shelves (about 2–4) and puts that split in niches. A one-off book stays
+un-niched until about three books cluster; the story waits until `todo` lists it. Don't write the story during the
+import.
+
 | Table | One row per | Rules |
 |---|---|---|
 | `niche_roles` | author in a niche | `role`: one line on why they matter there |

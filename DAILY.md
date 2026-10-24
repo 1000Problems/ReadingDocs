@@ -36,10 +36,14 @@ For a reader with hundreds or thousands of books ([IMPORT.md](IMPORT.md)), sched
 best first:
 
 1. pages for books they're reading (`todo` `description:`), in their page rules ([PAGES.md](PAGES.md)); then notes and
-   scores for books rated 5, then 4;
+   scores for books rated 5, then 4, that are still unscored;
 2. missing ISBNs, and covers/photos the shared facts still don't have (README, *Covers and author photos*);
 3. author pages, one per author, most-owned first ([IMPORT.md](IMPORT.md) section 7). The author rows already exist
    with the books (the database makes one per author); never add a second row for an author who has one.
+
+If an import stopped before every book had a rank, score the rest when the reader is here, best-rated first
+([IMPORT.md](IMPORT.md), *Ranking in the same session*). That bulk score waits for a yes. An unattended run fills only
+a few of the highest-rated gaps, and it does not change the ranking template.
 
 Keep each unattended run to 20 rows or fewer: that's the reader's standing limit for scheduled runs (in a session
 with them, still ask before more than 5). Say in the run's summary what you changed. Never change shelves, statuses, ratings or

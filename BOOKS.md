@@ -4,7 +4,7 @@ Every book is added this way: one request, under a minute. The reader sees it on
 cover (from the shared facts), a note on why it's for them, and a score. The database makes the author row.
 
 **No pages here.** No book page, no author page, no news search, no cards. Those come after, in the sections the
-reader chose ([PAGES.md](PAGES.md)). Ten or more books at once: [IMPORT.md](IMPORT.md).
+reader chose ([PAGES.md](PAGES.md)). Ten or more books at once: [IMPORT.md](IMPORT.md) (*The fast path*).
 
 Read the reader's goal first: `select rules ->> 'note' from rules where kind = 'book_note'`.
 
