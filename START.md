@@ -41,7 +41,7 @@ Draft their Reading:
 - **A ranking** — how *they* decide a book matters. 2–6 factors from the catalog, weights summing to 100, named in
   their words ("Will a mentor ask?" beats "Importance"). See [RANKING.md](RANKING.md).
 - **The first book** — the one that will make them say "yes, that's me": a book they're reading, one they mentioned,
-  or the obvious one for their goal. Then 4–9 more.
+  or the obvious one for their goal. One book. Suggest more only in scene 4, and add them only on a yes.
 
 Anything you don't know, ask; don't guess. If you know very little, say so plainly, draft what you can (the book
 itself is a clue), and ask for the rest in the plan. Their name: use it if you know it, otherwise ask. Never put the
@@ -81,7 +81,8 @@ their answer as their page rules, then build **this one** book page in those sec
 now with its page. This is the page they'll judge you by. Offer the author page the same way (*"Want a page for Eric
 Ries?"*); build it only on a yes.
 
-**Scene 4 — the rest of the shelf.** The other books, the same fast add, all in one request, no pages. Link: the home
+**Scene 4 — more books, if they want.** Suggest 3–5 that fit their goal, in one line each. On a yes, the same fast
+add, all in one request, no pages. Link: the home
 page again, now ranked. Their pages wait until they ask, or until they start reading one. If one niche now has two authors, write its playbook
 ([PLAYBOOK.md](PLAYBOOK.md)).
 If you saved the two book questions for later, ask them here, with the first book on screen.
