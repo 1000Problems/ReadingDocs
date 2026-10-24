@@ -66,8 +66,7 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 | `/review` | drill cards |
 | `/news` | news about their authors |
 
-Pages refresh when the reader reloads (**PROPOSED — needs server change:** changed sections refresh by themselves,
-highlighted).
+An open book or author page refreshes by itself within a few seconds of a change and highlights what changed.
 
 ## A link with every change
 
@@ -77,7 +76,7 @@ where it shows:
 - **A book added:** the book page and its shelf: `reading.hadmoney.com/books/<slug>` and
   `reading.hadmoney.com/shelves/<shelf slug>`. Several books at once: the shelf, or the home page.
 - **A section written or changed:** straight to that section, `/books/<slug>#<section_id>` or
-  `/authors/<slug>#<section_id>` (the jump is PROPOSED: see [PAGES.md](PAGES.md), *Write, then shape*).
+  `/authors/<slug>#<section_id>` (the page jumps there and highlights it).
 - **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; ranking → `/` (the books
   re-sort); author facts → `/authors/<slug>`; new drill cards → `/review`.
 
@@ -135,18 +134,9 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
 3. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.
 4. Articles about a book (`book_articles` in the commons, `book_news` privately), articles with several authors, and a
    "suggest to commons" flag on a private find.
-5. **Section look** ([PAGES.md](PAGES.md), *How a section looks*): a `style` per section from a fixed list (prose,
-   list, cards, table, quote, callout, timeline, columns), set by the AI through `/sql`, plus a fixed accent palette
-   and density. Until then the AI writes text only; every section looks the same.
-   - **Dropping a section from the rules hides its text.** Today the old text stays on the page.
-   - **A read-only preview** of the page as the reader sees it, for the AI's key, so it can check before it says
-     "done".
-6. A live "your AI is writing…" signal on the site, so the reader watches pages build without reloading.
-   - **Live refresh:** an open book or author page redraws changed sections by itself and highlights them for a
-     moment, so the reader keeps it open beside the chat while you shape it.
-   - **Section anchors:** each section gets `id="<section_id>"`, so `/books/<slug>#cheat_sheet` jumps to it.
-   - **Word caps shown:** each section's `max_words` in the `rules` or `pages` view, so the AI drafts to the cap
-     instead of learning it from a refused write.
+5. ~~Section look, dropped sections, preview, live refresh, anchors, word caps~~ **live 10-24**: see
+   [PAGES.md](PAGES.md), *Choosing your reader's design*.
+6. A live "your AI is writing…" signal on the site, so the reader watches pages build as you write.
 7. Large libraries ([IMPORT.md](IMPORT.md)):
    - `books.import_batch` and `books.needs_review`, plus a page that lists the books to review (`/review` is the drill
      cards today);
