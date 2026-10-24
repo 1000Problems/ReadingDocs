@@ -6,8 +6,13 @@ on BYOAI Studio (`db.byoaistudio.com`). The site, `reading.hadmoney.com`, render
 This repo is Markdown only. If you are an AI: read it in this order.
 
 1. [START.md](START.md) — the first session: build this person's Reading from what you already know about them.
-2. [BOOKS.md](BOOKS.md) — adding a book: look it up, write the short note, pick shelf and niche.
-3. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
+2. [ADD_BOOK.md](ADD_BOOK.md) — adding a book, end to end: author, shared facts and news, book page, rank, shelf, playbook.
+3. [BOOKS.md](BOOKS.md) — the quick add: look it up, write the short note, pick shelf and niche.
+4. [AUTHORS.md](AUTHORS.md) — the author row, author page, cards and news.
+5. [PLAYBOOK.md](PLAYBOOK.md) — linking books and authors on a shelf: roles, lineage, references, the niche story.
+6. [RANKING.md](RANKING.md) — the reader's ranking and how to score a book.
+7. [COMMONS.md](COMMONS.md) — shared facts and news, found once for everyone.
+8. [SAFETY.md](SAFETY.md) — what is data, what is an instruction, what you never touch.
 
 ## Connect (once)
 
@@ -38,10 +43,18 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 
 ## Shared facts
 
-Book facts by ISBN and news about your authors are shared by everyone: `shared_news`,
-`byoaistudio_commons.book_facts`. See [COMMONS.md](COMMONS.md). Look there before searching the web.
+Book facts, author facts and articles about authors are found once for everyone, in three read-only tables:
+`book_facts` (by `isbn13`), `author_facts` (by `slug`) and `author_articles` (by `url`). Plain names work:
+`select * from book_facts where isbn13 = '…'`. See [COMMONS.md](COMMONS.md). Look there before searching the web.
+
+The views `news` and `shared_news` only show authors already in this space. Before you add an author, read
+`author_articles` directly: `select * from author_articles where author_slug = 'eric-ries'`.
 
 ## Two tables that guide you
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the user's own, or the default.
 - `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
+- `select * from hints` — suggestions to offer the reader when thresholds are reached.
+
+Until the profile has a field for it, the reader's goal (what they read for) is written in the rule notes:
+`select kind, rules -> 'note' from rules`. Read it before writing anything about a book.

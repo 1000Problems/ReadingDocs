@@ -23,6 +23,10 @@ From that, draft their Reading:
 
 If you know very little, say so plainly and ask before drafting.
 
+**Write the goal down.** What the reader reads for (e.g. "talk with people starting AI startups") is lost after the
+session unless you store it. Until the profile has a field for it, put it in the home shelf's `sentence` and in the
+`note` of the `book_note` and `drill_cards` rules. Every later AI reads it from `select kind, rules -> 'note' from rules`.
+
 ## 2. Show the plan, ask at most two questions
 
 Show the draft in a few lines. Ask only what you can't infer: usually *"what are you reading now?"* and
@@ -47,15 +51,18 @@ Then `select * from todo order by priority` and tell them, in one line each, wha
 
 ## Exact SQL
 
-Profile, one home shelf with two niches, and a second shelf:
+Profile, one home shelf with two niches, and a second shelf. A new space already has a home shelf `books`; unset it
+first. `sentence` is the one line on what belongs on the shelf:
 
 ```sql
+update shelves set home = false where home;
 update profiles set display_name = 'Angel';
 insert into profiles (display_name) select 'Angel' where not exists (select 1 from profiles);
 insert into shelves (slug, name, position, home, blurb, niches) values
   ('founder', 'Founder', 0, true, 'Building a company: people, product, money.',
    '[{"id":"people","label":"People"},{"id":"product","label":"Product"}]'),
   ('kitchen', 'Spanish kitchen', 1, false, 'Cooking from home, proportions right.', '[]');
+update shelves set sentence = blurb where sentence is null;
 ```
 
 A ranking in the user's words: 3 factors, weights sum to 100:

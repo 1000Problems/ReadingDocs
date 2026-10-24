@@ -38,6 +38,8 @@ You are the BYOAI commons job. Base URL https://db.byoaistudio.com, key in <file
 ```
 
 `kind` is one of news, article, interview, podcast, talk, award, upcoming. Times are UTC.
+Private `author_news.kind` accepts only news, interview, award, talk, upcoming; for an article or podcast use
+`kind = 'news'` and put `article` or `podcast` in `article_kind`.
 
 ## Exact SQL
 
