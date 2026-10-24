@@ -1,7 +1,8 @@
 # AUTHORS — author rows, pages and news
 
-> **Draft (2026-10-23).** The same steps as [ADD_BOOK.md](ADD_BOOK.md) 5, 6 and 8, for when `todo` asks for an
-> author on its own (`author_page:<slug>`, `author_check:<slug>`).
+The same steps as [ADD_BOOK.md](ADD_BOOK.md) 5, 6 and 8, for when `todo` asks for an author on its own
+(`author_page:<slug>`, `author_check:<slug>`). The page is written for this reader: who this person is *to them*, and
+what to say about them in the reader's conversations.
 
 ## The row
 - One `authors` row per person. `slug` fills from `name`; keep `name` identical to how `books.author` spells it.
@@ -20,8 +21,9 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 ## News
 1. Read first: `select url, headline, kind, published_on from author_articles where author_slug = '<slug>'`
    and `select * from news where author = '<slug>'`.
-2. Search only if `todo` lists `author_check:<slug>`.
-3. Store finds in `author_news` (`on conflict (url) do nothing`), link with `news_authors` and `news_books`, then
+2. Search the web (last 12 months) only if `todo` lists `author_check:<slug>`.
+3. Store finds in `author_news` (`on conflict (url) do nothing`). `author_id` is the main author; `news_authors` adds the
+   others, `news_books` the books it's about. Then
    `update authors set news_checked_at = now()`. Private to this reader; the weekly job never reads it.
 4. `why`: one sentence per `news_why` rules (10–40 words), tied to a book or idea on the shelf.
 

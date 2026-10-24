@@ -1,8 +1,6 @@
 # Ranking
 
-> **Draft (2026-10-23), for Angel's review.** The template section is what `angel-rules.sql` will follow.
-
-Every book gets one number, `rank`, and the site orders by it. The **user** decides what the number means. You write their system down as a ranking template, score each book against it, and the database does the arithmetic.
+Every book gets one number, `rank`, and the site orders by it. The **reader** decides what the number means. You write their system down as a ranking template, score each book against it, and the database does the arithmetic.
 
 One ranking system per space for now.
 
@@ -11,19 +9,20 @@ One row in `templates` with `kind = 'ranking'`. Its `rules`:
 
 | Key | What |
 |---|---|
-| `score_name` | what the user calls the number: "Importance", "Ask", "Read next" |
+| `score_name` | what the reader calls the number: "Importance", "Ask", "Read next" |
 | `score_sentence` | what it means, one sentence, in their words |
 | `factors` | 2–6 of `[{"id", "weight"}]`; weights are whole numbers summing to 100 |
 | `note` | calibration examples, at most 300 characters: "Zero to One = 9 on mentor: every founder conversation" |
 
 Factors come from the catalog's list (`select factors from catalog where kind = 'ranking'`): `talk`, `readers`, `current`, `canon`, `mentor`, `influence`, `endurance`, `experts`, `reach`. Each has a label and a one-line meaning there. Custom factors come later.
 
-Until the user saves one, the default applies (`select rules from rules where kind = 'ranking'`): **Importance** = influence 30 · canon 25 · experts 20 · endurance 15 · reach 10.
+Until the reader saves one, the default applies (`select rules from rules where kind = 'ranking'`): **Importance** = influence 30 · canon 25 · experts 20 · endurance 15 · reach 10.
 
 The database refuses a template with unknown factors, fewer than 2 or more than 6, or weights that don't sum to 100. Every save keeps a version (`template_history`).
 
-## Setting it up with the user
-Do this once there are 10+ books, or when they ask "why is X above Y?".
+## Setting it up with the reader
+In the first session, draft it from what you know (START.md). Revisit it once there are 10+ books, or when they ask
+"why is X above Y?".
 1. Ask: "When you pick the next book, what makes one win?" Listen for the factors in their answer: being asked about it (`talk`, `mentor`), everyone has read it (`readers`), it's new (`current`), it's a classic (`canon`, `endurance`), it changed its field (`influence`).
 2. Propose a template in one message: name, sentence, 3–5 factors with weights. Show the top 5 books it would produce.
 3. Adjust until they nod. Save it. Put the two or three books that defined the scale in `note`.
@@ -32,7 +31,8 @@ Do this once there are 10+ books, or when they ask "why is X above Y?".
 ## Scoring a book
 Write `rank_detail = {"scores": {<factor>: 1–10, …}}` with a score for **exactly** the template's factors, plus `rank_why`: one line naming the strongest evidence. The database computes `rank` and refuses scores that don't match the factors.
 
-- Score against the user's world, not the general public's.
+- Score against the reader's world, not the general public's. A book every founder quotes and nobody else reads is a
+  9 for Maya.
 - Books under five years old score at most 5 on `endurance`.
 - Use the calibration note: the books there anchor the scale.
 
@@ -46,7 +46,7 @@ What's on offer and what's active:
 select factors, "default" from catalog where kind = 'ranking';
 select source, version, rules from rules where kind = 'ranking';
 ```
-Save the user's template (an upsert: run it again to change it):
+Save the reader's template (an upsert: run it again to change it):
 ```sql
 insert into templates (kind, rules, apply_existing) values ('ranking', '{
   "score_name": "Ask",
