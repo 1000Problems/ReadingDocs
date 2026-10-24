@@ -24,8 +24,8 @@ what to say about them in the reader's conversations.
 - `hook`: one line to remember them by.
 
 ## The page
-`authors.summary`, `## ` sections from `select rules from rules where kind = 'author_page'`: who, remember,
-big_ideas, books, how_people_talk, critiques, cheat_sheet, sources. Required: who, big_ideas, sources (1+ URL).
+Only after the reader said yes to it, in their `author_page` rules ([PAGES.md](PAGES.md), *The page conversation*),
+one section per request through `author_sections`. Who they are, big ideas and sources (1+ URL) belong on every page.
 Full names. Describe a face only after looking at the photo. Use the author's news in *How people talk about them*.
 
 Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
@@ -43,13 +43,9 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 ## Exact SQL
 ```sql
 insert into authors (name, hook) values ('Eric Ries', '…') on conflict (slug) do update set hook = excluded.hook;
-update authors set summary = '## Who they are
-…
-
-## Big ideas
-- …
-
-## Sources
-- https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/' where slug = 'eric-ries';
+insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'who', '…');
+insert into author_sections (author_slug, section_id, body) values ('eric-ries', 'sources',
+  '- https://fortune.com/2026/05/26/eric-ries-lean-startup-incorruptible-big-tech-founders/');
+select sections, missing from pages where kind = 'author' and slug = 'eric-ries';
 select author, headline, published_on, mine, shared from news where author = 'eric-ries' order by published_on desc;
 ```

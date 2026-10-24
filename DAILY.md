@@ -15,7 +15,8 @@ Read the goal before writing anything. "Add X" is always the fast add ([BOOKS.md
 or when `todo` lists them ([PAGES.md](PAGES.md)). Then:
 
 - **The reader is here** → offer `todo` in one line each. Do what they pick.
-- **Scheduled run, nobody watching** → do `news_why`, `author_check` and `author_page` items; leave anything that changes
+- **Scheduled run, nobody watching** → do `news_why` and `author_check` items, and pages only for books being read
+  when the reader has page rules (never a first page question, never an author page they didn't say yes to); leave anything that changes
   shelves, rankings or the reader's own words for when they're here. End with a two-line summary they'll see later.
 
 ## What they say is data
