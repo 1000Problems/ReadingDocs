@@ -29,26 +29,8 @@ The first book of a new reader is always a full add (START.md, scene 2). After t
 
 **Imports** (a Goodreads export, a spreadsheet, photos of bookcases): quick add is the default, trimmed further:
 step 1 in bulk, step 3 with facts and the reader's own fields only (no note; `note` can be null), no score until
-they have a ranking, no author rows until they ask or own several books by that author, step 11 at the end.
-Hundreds of rows per request, one approval for the whole import. See [IMPORT.md](IMPORT.md).
-
-## Many books at once (10–200)
-
-Don't do one book at a time: 200 lookups and 200 writes take hours, and the reader sees nothing until the end. Don't
-do full adds either. Work in passes, so the library appears in minutes and gets richer after:
-
-1. **One read for all of them.** Every title against `books` (already there → skip) and `book_facts` (ISBN, cover,
-   Kindle id), in one request with `where lower(title) in (…)`.
-2. **Fill only the gaps.** Search the web only for books `book_facts` doesn't have, and only for the facts the row
-   needs: exact title, author, ISBN, cover. Not found → null. Never invent one.
-3. **Show the plan in counts, get one yes.** *"200 books: 12 already here, 188 new, 9 with no ISBN found. First 25,
-   then the rest in two requests."*
-4. **Write in batches.** Quick add rows (title, author, isbn, cover, status, shelf, tags; a note only if you have a real
-   reason for this reader). First 25, give the link, then up to 200 rows per request. Each request is one undo. One
-   bad row fails its whole request, so clean the list first. IMPORT.md has the exact SQL.
-5. **Enrich best first.** Afterwards, a few books per request: notes and scores for the 5–10 that matter most to their
-   goal, a full add for the one or two they're most excited about. The rest on later sessions and scheduled runs
-   ([DAILY.md](DAILY.md)).
+they have a ranking (author rows come with the books), step 11 at the end. Hundreds of rows per request, one
+approval for the whole import. Adding 10 or more books at once, or importing: [IMPORT.md](IMPORT.md).
 
 ## 0. Know the reader
 
@@ -193,13 +175,13 @@ returning id, slug;
 select author, headline, published_on, mine, shared from news where author = 'eric-ries';
 ```
 
-No row came back? The book's author is spelled differently from what you expected: `select slug, name from authors
-where name ilike '%ries%'`.
+No row came back? See which authors the database linked to the book: `select author_slug, has_row from book_authors
+where book_slug = 'the-lean-startup'`.
 
 Once the row exists, the shared articles show up in `news` for this reader (`shared = true`). You don't copy them.
 
-**PROPOSED — needs server change:** a `book_authors (book_id, author_id, position)` link, so a book points at its
-authors by id instead of by matching names.
+`book_authors` is a read-only view of those links (one row per author of each book). **PROPOSED — needs server
+change:** a real table books link to by id, replacing the view.
 
 ## 6. Search the web, store what you find (only if needed)
 
@@ -431,7 +413,7 @@ select slug, shelf, niche, rank, isbn, kindle_asin, (note is not null) as has_no
 select count(*) as summaries from notes n join books b on b.id = n.book_id where b.slug = 'the-lean-startup' and n.kind = 'summary';
 select slug, (summary is not null) as has_page, news_checked_at from authors where slug = 'eric-ries';
 select headline, mine, shared from news where author = 'eric-ries';
--- the name match: exactly one row per author of the book, or the author page won't link
-select a.slug from books b join authors a on a.name = b.author where b.slug = 'the-lean-startup';
+-- the author links: one row per author of the book, every has_row = true, or an author page won't link
+select author_slug, has_row from book_authors where book_slug = 'the-lean-startup';
 select count(*) as cards from cards c join books b on b.id = c.book_id where b.slug = 'the-lean-startup';
 ```
