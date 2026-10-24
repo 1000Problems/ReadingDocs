@@ -27,7 +27,7 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `founder_angle`, `overlap` (which book on the
 shelf covers the same ground), `why_read` (the reader's own reason only, never yours).
 
-`slug` is made from the title if you leave it out. Many books in one request is fine. For imports (a Goodreads export, a spreadsheet, photos), see
+`slug` is made from the title if you leave it out. Adding 10 or more: ADD_BOOK.md, *Many books at once*. For imports (a Goodreads export, a spreadsheet, photos), see
 [IMPORT.md](IMPORT.md).
 
 ## Exact SQL
