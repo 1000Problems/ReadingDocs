@@ -20,6 +20,7 @@ needs:
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
 | A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose |
+| The reader pasted "Let's shape my Reading page for …" or "Let's talk about … on my Reading" | [PAGES.md](PAGES.md), *When the reader comes from the site* |
 
 When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
 [RANKING.md](RANKING.md) (the reader's ranking, scoring), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf

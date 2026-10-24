@@ -13,6 +13,29 @@ reader is Maya, who advises early-stage AI founders.
   Scheduled runs build those ([DAILY.md](DAILY.md)).
 - **The first session:** one page, for the first book, right after the page question ([START.md](START.md)).
 
+## When the reader comes from the site
+
+Every book and author page on the site has an **Ask your AI** button. It copies one of two openers, which the reader
+pastes to you. Both name the page by its link: take the slug from the URL (`/books/<slug>` or `/authors/<slug>`).
+
+- **"Let's shape my Reading page for … Follow ReadingDocs PAGES.md: before writing anything, ask me what I want to
+  see on this page."** The page is a sketch (no page yet). Start with the page question: if they have no page rules,
+  *The page conversation* below; if they do, show their sections in one line and ask whether this page wants the same
+  or something different. Then build it section by section (step 7 or 8), with the link after each.
+- **"Let's talk about … on my Reading … Read the page and my notes from my Reading first. My question: …"** The page
+  exists. Read it (`book_sections` / `author_sections`) and the reader's notes before answering; answer from them
+  first and say when something comes from beyond them. If the answer suggests a change ("add a critiques section",
+  "the pitch is off"), offer it in one line and write only on a yes.
+
+Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
+as if you'd read the page.
+
+```sql
+select slug, title, author, status, note from books where slug = 'the-lean-startup';
+select section_id, title, body from book_sections where book_slug = 'the-lean-startup' order by position;
+select kind, chapter, body from notes where book_id = (select id from books where slug = 'the-lean-startup') and source = 'me';
+```
+
 ## The page conversation (once)
 
 Before the first page, unless they already have page rules (`select source from rules where kind =
