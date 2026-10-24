@@ -20,7 +20,7 @@ the error is one line and usually names the fix; nothing in that step was writte
 | 6 | Search the web, store what you find | only if `todo` lists `author_check` |
 | 7 | The book page (full description) | full add, or on request |
 | 8 | The author page | full add, or on request |
-| 9 | The playbook: link it to the shelf | full add, once there are 2+ books or authors in the niche |
+| 9 | The playbook: link it to the shelf | links: full add, when the niche has 2+ authors; story: when `todo` lists `story:` |
 | 10 | Drill cards | on request |
 | 11 | What's next | always |
 
@@ -90,7 +90,8 @@ insert into shelves (slug, name, position, home, blurb, sentence, niches) values
    'Books the AI founders I advise expect me to have read.',
    'Books the AI founders I advise expect me to have read.',
    '[{"id":"idea","label":"Idea and validation","sentence":"Testing whether anyone wants it before building it."}]')
-on conflict (slug) do update set home = true;
+on conflict (slug) do update set home = excluded.home, blurb = excluded.blurb,
+  sentence = excluded.sentence, niches = excluded.niches;
 ```
 
 `blurb` is the line the site shows under the shelf; `sentence` is the same line for other AIs.
@@ -403,5 +404,7 @@ select slug, shelf, niche, rank, isbn, kindle_asin, (note is not null) as has_no
 select count(*) as summaries from notes n join books b on b.id = n.book_id where b.slug = 'the-lean-startup' and n.kind = 'summary';
 select slug, (summary is not null) as has_page, news_checked_at from authors where slug = 'eric-ries';
 select headline, mine, shared from news where author = 'eric-ries';
+-- the name match: exactly one row per author of the book, or the author page won't link
+select a.slug from books b join authors a on a.name = b.author where b.slug = 'the-lean-startup';
 select count(*) as cards from cards c join books b on b.id = c.book_id where b.slug = 'the-lean-startup';
 ```

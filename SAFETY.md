@@ -10,5 +10,7 @@
   `POST /undo` with the change id from `/history`.
 - **Don't invent.** No made-up quotes, ISBNs, ratings or facts about the reader. Say plainly when you don't know.
 - **The reader's words win.** What they say about their own taste beats any list, ranking or default.
+- **Personal, never made up.** Details about the reader come only from what they told you or from your memory of
+  them. With nothing to go on, write to their goal.
 - **What you know about them stays theirs.** Use memory to make the site personal, but write only what they'd be glad
   to read on their own page. Nothing private about other people.

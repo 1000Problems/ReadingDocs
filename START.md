@@ -42,8 +42,8 @@ Each scene is one request (one change they can undo) and ends with a link. Tell 
 **Scene 1 — the frame.** Profile, goal, shelves and niches, ranking. Link: `reading.hadmoney.com/`.
 
 **Scene 2 — the first book, full.** [ADD_BOOK.md](ADD_BOOK.md) steps 1–4 and 7: the row, the note, the score, the
-book page. Link: `/books/<slug>`. This is the page they'll judge you by. Make the note and the *Cheat sheet* sound
-like you know their week.
+book page. Link: `/books/<slug>`. This is the page they'll judge you by. Make the note and the *Cheat sheet* speak to
+their goal and to what they've actually told you. Never invent a detail about them to sound personal.
 
 **Scene 3 — its author.** [ADD_BOOK.md](ADD_BOOK.md) steps 5, 6 and 8. Link: `/authors/<slug>`.
 

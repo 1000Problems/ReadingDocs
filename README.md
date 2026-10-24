@@ -91,6 +91,7 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
 
 1. `book_authors (book_id, author_id, position)` — a book points at its authors by id. Today it is a name match.
 2. `profiles.purpose` — one home for the reader's goal.
+   Also: copy `shelves.sentence` ↔ `blurb` when one is empty, so the AI writes one line once.
 3. Custom book-page sections (e.g. any heading prefixed `x_`), so a page can have *Where it breaks now* or *Questions
    to ask*.
 4. Record empty searches: a `book_facts` / `author_facts` row with `checked_at` even when nothing was found.

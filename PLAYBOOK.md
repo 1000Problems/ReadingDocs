@@ -15,9 +15,10 @@ authors **on this reader's shelf** get links. Everything else goes in a book pag
 | `niche_stories` | niche (`''` = whole shelf) | `playbook` rules: 120–250 words, full names, *The lineage* required; optional *Timeline*, *The debates*, *Where to start*, *Sources*; front matter `title:` / `headline:` |
 
 ## When
-- After a full add, if the niche now has 2+ authors or books. `todo` asks (`story:`) once a niche has 3 books.
+- **Links** (`niche_roles`, `pairs`, `refs`, `book_links`): after a full add, once the niche has 2+ authors.
+- **The story** (`niche_stories`): when `todo` lists `story:<shelf>:<niche>`. It does once a niche has 3 books.
 - When the reader asks "how do these connect?" or a news item shows a new link (a review, a joint talk).
-- Don't write a lineage from one author. Wait, or write only *Where to start* after asking.
+- Don't write a lineage from one author.
 
 ## Exact SQL
 See ADD_BOOK.md step 9. Read first:

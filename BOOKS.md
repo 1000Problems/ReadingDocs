@@ -17,7 +17,8 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 4. **Author.** Full name(s), first author first. **Write `books.author` exactly as `authors.name`**: that name match is
    the only link from a book to its author page. Check: `select name from authors where name ilike '%ries%'`.
 5. **The short note** (`note`): one paragraph, why *this* book for *this* reader, from their goal and what you know
-   of them. A note that would fit anyone is wrong. Rules: `select rules from rules where kind = 'book_note'` (default 40–90 words, plain prose, no invented
+   of them. A note that would fit anyone is wrong. Personal details only from what they told you or what's in your
+   memory of them; if you have none, write to their goal. Never invent a detail to sound personal. Rules: `select rules from rules where kind = 'book_note'` (default 40–90 words, plain prose, no invented
    quotes or facts).
 6. **Status:** `want` (default), `reading`, `finished`, `abandoned`. Dates fill themselves.
 7. **Score it** (optional now, expected soon): `rank_detail = '{"scores": {…}}'` with a 1–10 score for every factor
@@ -33,7 +34,7 @@ shelf covers the same ground), `why_read` (the reader's own reason only, never y
 ```sql
 insert into books (title, author, status, shelf, niche, note) values
   ('High Output Management', 'Andrew S. Grove', 'want', 'founder', 'people',
-   'Grove wrote the manual for running a team when he ran Intel. Three of the founders you advise are hiring their first managers this quarter; his one-on-one and output chapters are what they will quote at you, and the part you can push back on.');
+   'Grove wrote the manual for running a team when he ran Intel. Founders hiring their first managers quote his one-on-one and output chapters; read them so you can tell which advice still fits a ten-person AI company and where to push back.');
 ```
 
 ```sql
