@@ -68,6 +68,11 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 
 An open book or author page refreshes by itself within a few seconds of a change and highlights what changed.
 
+## Prompts from the site
+
+The site never builds anything itself: every "add", "change the look", "move", "rank" or "write the story" control
+copies a prompt for you. When a message is one of those, do exactly that one thing: [SITE-PROMPTS.md](SITE-PROMPTS.md).
+
 ## A link with every change
 
 The reader wants to see what you did, not read about it. Every message that reports a change ends with the link to
@@ -115,7 +120,7 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 - `select * from rules` — the active rules per kind (book note, ranking, …): the reader's own, or the default.
 - `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
 - `select id, at, what from your_changes where new` — what the reader changed on the site since you last looked
-  (a look, a new section). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
+  (notes, status, deletes). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
   on the site*).
 - `select * from hints` — suggestions to offer the reader when thresholds are reached.
 

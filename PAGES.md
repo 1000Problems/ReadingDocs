@@ -28,17 +28,9 @@ pastes to you. Both name the page by its link: take the slug from the URL (`/boo
   "the pitch is off"), offer it in one line and write only on a yes. If they ask for the change themselves, their
   words are the go-ahead: make it (*Write, then shape*, below).
 
-**Prompts copied from a section.** Every section on the site has buttons that copy one short prompt, naming the page
-and section by link (`…/books/<slug>#<section_id>`). Each asks for exactly one thing; do that thing, check the
-preview, and end with the link to `#<section_id>`:
-
-| The prompt starts | You do |
-|---|---|
-| "Let's work on the <section> on my Reading page for …" | read that section, ask what to change, write only that section |
-| "Show me 2–3 other looks for the <section> …" | offer 2–3 looks from `section_styles` (rewriting the body into a new shape is fine), then change the **template** to the pick |
-| "On my Reading, write the <section> for …" | write that one section for that book, in the template's look and shape |
-| "… write the <section> on all my book pages that don't have it yet" | `select slug from pages where kind = 'book' and has_page and '<id>' = any(missing)`; one section per request; links at the end |
-| "I want a new section on my Reading book pages …" | the custom-section conversation (*The page conversation*): heading, purpose, word cap → add an `x_` section to the rules |
+**Prompts copied from the site.** Every section, look, placeholder and "+ Add section" option on the site copies
+one short prompt that names the page and section by link. [SITE-PROMPTS.md](SITE-PROMPTS.md) lists every one and
+what you do with it: exactly that one thing, check the preview, link back to `#<section_id>`.
 
 Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
 as if you'd read the page.
@@ -209,8 +201,9 @@ same way. Don't bring the design up again unless they do.
 
 ### What the reader changed on the site
 
-The reader can change the template on the site too: pick a look for a section ("⋯ Look") or add a catalog section
-("+ Add section"). Site changes always change the **template** (every page), never one book.
+The site never changes pages, looks, sections or shelves: those come to you as prompts
+([SITE-PROMPTS.md](SITE-PROMPTS.md)). What the reader does change there directly is their own: notes, status,
+rating, Kindle, drill answers, deletes.
 
 **At the start of every conversation**, read what they did since you last looked:
 
@@ -219,8 +212,8 @@ select id, at, what from your_changes where new order by id;
 ```
 
 If there's anything, say it in one line and offer the natural next step, then mark it seen:
-- a new section → "You added Critiques. Want me to write it for your 12 books?"
-- a new look → "You switched the pitch to a list. Want me to reshape pitches that read better as bullets?"
+- finished a book → "You marked The Lean Startup finished. Want drill cards from your notes?"
+- new notes → "You added 6 notes on chapter 3. Want me to fold them into the cheat sheet?"
 
 ```sql
 update profiles set site_changes_seen = (select max(id) from your_changes);
