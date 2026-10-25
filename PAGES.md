@@ -171,18 +171,21 @@ clears it) only when the reader asks for that book alone ("just for this
 book, make it a timeline"). Never on your own.
 
 **The menu is the server's.** Read it, don't remember it: `select * from section_styles`. Keys: `display` (prose ·
-list · cards · table · quote · callout · timeline · columns), `accent` (slate · blue · green · amber · red · violet ·
+list · cards · table · quote · callout · timeline · columns · saywhytrap · versus · qa · checklist), `accent` (slate · blue · green · amber · red · violet ·
 teal), `density` (compact · roomy), `icons`. Each row has `shape` (the one markdown shape that display expects) and
 `good_for`. No HTML, CSS or scripts, ever; a wrong value is refused and the error names the allowed ones.
 
 **One shape per display.** Write the body in the shape its display expects (cards and columns: `### Title` blocks;
 list: bullets; table: one markdown table; quote: `> ` lines ending `— Name, [source](url)`; timeline: bullets that
-start with a year). A body that doesn't fit is drawn as prose and shows in `pages.style_warnings`: fix the body.
+start with a year; saywhytrap: `### Topic` blocks with `**Say:**` / `**Why:**` / `**Trap:**` lines; versus: bullets
+`- **Claim** — pushback`; qa: `### Question?` blocks, the answer below; checklist: bullets `- [ ] **Title** detail`,
+display only). A body that doesn't fit is drawn as prose and shows in `pages.style_warnings`: fix the body.
 
 **The first time** (any row in `select section_id, style_set from rule_sections` with `style_set = false`):
 1. `select * from section_styles`.
-2. Pick a display per section from what the content is (`good_for`: cheat sheet → cards, numbers → table, a career →
-   timeline, the pitch → callout) and who the reader is (their rules, notes, what they've said: "keep it short" →
+2. Pick a display per section from what the content is (`good_for`: cheat sheet → saywhytrap, critiques → versus,
+   questions → qa, things to try → checklist, numbers → table, a career → timeline, the pitch → callout; the
+   catalog's `look` is a good first guess) and who the reader is (their rules, notes, what they've said: "keep it short" →
    compact, cards, list). One accent and one density for the whole library.
 3. Save the styles in the rules **in the same request** as the page, so it's one change they can undo.
 4. Check the preview (below), then end with a "your design" line:
@@ -199,6 +202,7 @@ same way. Don't bring the design up again unless they do.
 |---|---|
 | "make the cheat sheet a table" | change the rules entry (every page); rewrite bodies into the new shape if needed; link to `#cheat_sheet` |
 | "just for this book, make it a timeline" | `style` on that one page |
+| "change the look of "X" … on "Book" only (a page override; my template stays)" | `style` on that one page (`update book_sections set style = …`), with the accent/density it names; rewrite that page's body into the shape if it doesn't fit |
 | "I don't like how it looks" | offer 2–3 options from the menu in one line; wait |
 | "can it be cards instead" | restyle, never remove |
 
