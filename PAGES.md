@@ -186,7 +186,9 @@ display only). A body that doesn't fit is drawn as prose and shows in `pages.sty
 2. Pick a display per section from what the content is (`good_for`: cheat sheet → saywhytrap, critiques → versus,
    questions → qa, things to try → checklist, numbers → table, a career → timeline, the pitch → callout; the
    catalog's `look` is a good first guess) and who the reader is (their rules, notes, what they've said: "keep it short" →
-   compact, cards, list). One accent and one density for the whole library.
+   compact, cards, list). **An accent per section**, from the palette (`select value from section_styles where key =
+   'accent' and palette`), on framed looks only: prose and list stay plain (no accent). No two neighbouring accented
+   sections share one. One density for the whole library unless they ask.
 3. Save the styles in the rules **in the same request** as the page, so it's one change they can undo.
 4. Check the preview (below), then end with a "your design" line:
 
@@ -194,14 +196,25 @@ display only). A body that doesn't fit is drawn as prose and shows in `pages.sty
 > I set up how your books look: pitch as a callout, cheat sheet as cards, numbers as a table, in blue. Want
 > something different? Just say, e.g. "make the cheat sheet a list" or "use green". Changes apply to every book.
 
+**Your own sections** (`x_`): when you build one with the reader, save it with a `style` (display and accent) in
+the same request.
+
+**Checklists.** The reader ticks items on the site; ticks live in `checks` (kind, slug, section_id, item = the item's
+bold title, lowercased). Read it to see what they did ("you've tried 2 of 3"); never write it. Write every item as
+`- [ ] **Title** detail`, keep titles unique within the list and keep them stable once any is ticked (a renamed item
+loses its tick).
+
+**Fit.** `select section_fits(body) from book_sections where …` lists the displays a body already fits.
+
 **After that,** follow the template silently. A new section with no style: pick one and say so in one line, the
 same way. Don't bring the design up again unless they do.
 
 **When they ask for a change:**
 | They say | You do |
 |---|---|
-| "make the cheat sheet a table" | change the rules entry (every page); rewrite bodies into the new shape if needed; link to `#cheat_sheet` |
+| "make the cheat sheet a table" | change the rules entry (every page); rewrite bodies into the new shape if needed; say how many pages keep their own override (`style` set on `book_sections`); link to `#cheat_sheet` |
 | "just for this book, make it a timeline" | `style` on that one page |
+| "reset the look of "X" (id) on "Book" to my template (clear this page's override)" | `update book_sections set style = null` on that page and section |
 | "change the look of "X" … on "Book" only (a page override; my template stays)" | `style` on that one page (`update book_sections set style = …`), with the accent/density it names; rewrite that page's body into the shape if it doesn't fit |
 | "I don't like how it looks" | offer 2–3 options from the menu in one line; wait |
 | "can it be cards instead" | restyle, never remove |

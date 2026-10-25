@@ -23,11 +23,12 @@ reading status, rating, Kindle link and import, drill answers, news read/saved, 
 | The prompt says | You do |
 |---|---|
 | "add the section "X" (id `x`: …) to my book/author page template [as B (display `b`)], then write it for …" | add `{"id": "x"}` to the rules' sections (end of the list), with `"style": {"display": "b"}` when it names one, then write that section on that page in that shape |
-| "help me design a new section for my book/author pages …" | the custom-section conversation (*The page conversation*): heading, purpose, look, word cap → an `x_` section in the rules, then write it on that page |
+| "help me design a new section for my book/author pages …" | the custom-section conversation (*The page conversation*): heading, purpose, look and accent, word cap → an `x_` section in the rules, then write it on that page |
 | "write the section "X" (id `x`) for …" | write that one section on that page, in the template's look and shape |
 | "write the section "X" on all my … pages that don't have it yet …" | `select slug from pages where kind = '<book\|author>' and has_page and 'x' = any(missing)`; one section per request; links at the end |
-| "change the look of "X" (id `x`, now A) to B (display `b`)[, C accent][, D spacing] on my … template …" | set `"style": {"display": "b"}` on that rules entry, plus `accent` / `density` when named (tight → `compact`, roomy → `roomy`, normal → drop it); keep the rest; rewrite bodies into b's shape where `pages.style_warnings` says they don't fit, starting with the named page |
+| "change the look of "X" (id `x`, now A) to B (display `b`)[, C accent][, D spacing] on my … template …" | set `"style": {"display": "b"}` on that rules entry (pages with their own override keep it: say how many), plus `accent` / `density` when named ("no accent" → drop `accent`) (tight → `compact`, roomy → `roomy`, normal → drop it); keep the rest; rewrite bodies into b's shape where `pages.style_warnings` says they don't fit, starting with the named page |
 | "change the look of "X" (id `x`) to B (display `b`)… on "Book" only (a page override; my template stays) …" | `update book_sections` (or `author_sections`) `set style = '{"display": "b", …}'` on that one page and section; rewrite that body into the shape if it doesn't fit; the template is untouched |
+| "reset the look of "X" (id `x`) on … to my … template (clear this page's override)" | `update book_sections` (or `author_sections`) `set style = null` for that page and section |
 | "let's work on the section "X" of …" | read it, ask what to change, change only that section |
 | "remove the section "X" (id `x`) from my … template …" | save the rules without it (it leaves every page in one change; they can undo) |
 
