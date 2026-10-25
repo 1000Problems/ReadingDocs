@@ -1,7 +1,7 @@
 # AUTHORS — author rows, pages and news
 
-The same steps as [PAGES.md](PAGES.md) 5, 6 and 8, in the sections the reader chose, for when `todo` asks for an author on its own
-(`author_page:<slug>`, `author_check:<slug>`). The page is written for this reader: who this person is *to them*, and
+The same steps as [PAGES.md](PAGES.md) 5, 6 and 8, in the sections the reader chose, for when a run hands you an author's
+Later row on its own (`author_page`, `news_check`). The page is written for this reader: who this person is *to them*, and
 what to say about them in the reader's conversations.
 
 ## The row
@@ -24,6 +24,16 @@ what to say about them in the reader's conversations.
 - `hook`: one line to remember them by.
 
 ## The page
+Author pages are never owed by themselves: one exists in Later only because the reader said yes. A yes for later, or
+for many ("pages for every author I own 2+ books by"), is one row each, then one line (*"12 author pages are in
+Later."*):
+```
+insert into owed (kind, subject)
+select 'author_page', 'author:' || author_slug from book_authors
+ group by author_slug having count(*) >= 2
+on conflict do nothing;
+```
+
 Only after the reader said yes to it, in their `author_page` rules ([PAGES.md](PAGES.md), *The page conversation*),
 one section per request through `author_sections`, only the sections they picked (a Sources section needs 1+ URL).
 Write the whole first pass back to back, no drafts in chat, then one message and shape it with them
@@ -36,10 +46,12 @@ Recall cards: `author_cards` kinds `face`, `idea`, `who`, `book`, `taught`.
 1. Read first: `select url, headline, kind, published_on from author_articles where author_slug = '<slug>'`
    and `select * from news where author = '<slug>'`.
 2. Search the web (last 12 months) **always before an author's first page** (no `summary`, no `news_checked_at`).
-   After that, only if `todo` lists `author_check:<slug>`. It does only for authors with a page.
+   After that, only when a run hands you its Later news check. Later has one only for authors with a page, 30 days
+   after the last check.
 3. Store finds in `author_news` (`on conflict (url) do nothing`). `author_id` is the main author; `news_authors` adds the
    others, `news_books` the books it's about. Then
-   `update authors set news_checked_at = now()`. Private to this reader; the weekly job never reads it.
+   `update authors set news_checked_at = now()` (this closes the Later check and schedules the next one in 30 days).
+   Private to this reader; the weekly job never reads it.
 4. `why`: one sentence per `news_why` rules (10–40 words), tied to a book or idea on the shelf.
 5. **News or article?** The site shows an item under **Articles** when `article_kind` is set, else under **News**.
    Something to sit down and read or hear (an essay, review, analysis, opinion piece, long profile, long written

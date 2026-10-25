@@ -13,6 +13,12 @@ When a message looks like one of these:
 What the reader still does directly on the site (you'll see it in `your_changes`): their notes and highlights,
 reading status, rating, Kindle link and import, drill answers, news read/saved, and deletes (with Undo).
 
+## Later ([DAILY.md](DAILY.md))
+| The prompt says | You do |
+|---|---|
+| "do the next 20 things in my Reading's Later list …" | a run: `owed_claim(20, 'live')`, do each, `owed_fail` what you can't, two-line summary ([DAILY.md](DAILY.md), *A run*) |
+| a scheduled task: "every … do the next 20 things in my Reading's Later list, unattended …" | the same with `owed_claim(20, 'scheduled')`; nobody is watching |
+
 ## Pages ([PAGES.md](PAGES.md))
 | The prompt says | You do |
 |---|---|

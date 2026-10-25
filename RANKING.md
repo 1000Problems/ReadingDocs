@@ -38,7 +38,11 @@ Write `rank_detail = {"scores": {<factor>: 1–10, …}}` with a score for **exa
 
 ## Changing it
 - "This book should be higher": change that book's scores.
-- "Recent books matter more to me": change the template (weights or factors) and add a calibration line. Save with `apply_existing = true` and `todo` lists every book to re-score.
+- "Recent books matter more to me": change the template and add a calibration line.
+  - **Only weights (or names, sentence, note) change:** every rank is recomputed in the same change, from the scores
+    the books already have. Nothing to re-score. Undo puts every rank back, until another book is edited.
+  - **The factors change:** the old scores no longer fit. Save with `apply_existing = true` and every scored book gets
+    a `rescore` row in Later; runs re-score them, best first. Re-scoring a book closes its row.
 
 ## Exact SQL
 What's on offer and what's active:
@@ -71,5 +75,5 @@ update books set rank_detail = '{"scores": {"talk": 7, "readers": 7, "current": 
 Check:
 ```sql
 select slug, rank, rank_why from books order by rank desc nulls last;
-select * from todo where kind like '%rank%';
+select title, state from owed where kind = 'rescore' order by id;
 ```

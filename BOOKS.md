@@ -47,9 +47,9 @@ anytime."* They correct it in plain words.
 
 If the reader has no page rules yet
 (`select source from rules where kind = 'book_description'` says `default`), ask the page question once
-([PAGES.md](PAGES.md), *The page conversation*). If they have rules, offer in one line with their sections: *"Want
-its page? Same sections: pitch, how people cite it, connections, cheat sheet?"* On a yes, write the whole first pass
-to the site and send one message ([PAGES.md](PAGES.md), *Write, then shape*).
+([PAGES.md](PAGES.md), *The page conversation*). If they have rules, don't offer the page. A book they're reading or
+rated 4–5 is put in Later by the database: end with one line, *"Its page is in Later; say "write it up" for it now."*
+Any other book: say nothing about pages. "Write it up" means now ([PAGES.md](PAGES.md), *Write, then shape*).
 
 ## Exact SQL
 

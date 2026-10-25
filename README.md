@@ -18,6 +18,7 @@ needs:
 | First session, a few books that matter | [START.md](START.md), [BOOKS.md](BOOKS.md) |
 | First session, a whole library (Goodreads export, spreadsheet, bookcase photos), or 10+ books at once | [START.md](START.md), [IMPORT.md](IMPORT.md) |
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
+| "Do what's waiting", the site's **Run now**, a scheduled run | [DAILY.md](DAILY.md), *A run* |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
 | A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose, written first, shaped after |
 | The reader pasted "Let's shape my Reading page for …" or "Let's talk about … on my Reading" | [PAGES.md](PAGES.md), *When the reader comes from the site* |
@@ -118,11 +119,50 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 ## Tables that guide you
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the reader's own, or the default.
-- `select * from todo order by priority` — what is waiting. Offer it; don't silently do it all.
+- `select * from owed_next order by priority` — what is waiting in **Later** (below). Do it when asked or on a run;
+  don't offer it in chat. (`todo` is the same list with the old item keys.)
 - `select id, at, what from your_changes where new` — what the reader changed on the site since you last looked
   (notes, status, deletes). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
   on the site*).
 - `select * from hints` — suggestions to offer the reader when thresholds are reached.
+
+## Later (owed work)
+
+Some work doesn't need to happen while the reader waits: a book's page, an author's news, a niche's story, a missing
+ISBN. That work goes in **Later**, one stored list (`owed`). The reader sees it on the site at `/later`, steers it
+(*Write it next*, *Not now*, *Never*, *Try again*), and any session pays from it, best first.
+
+**The database adds almost everything by itself**, the moment it becomes due, and **closes it by itself** when your
+write does the work (in the same change, so undo reopens it):
+
+| Owed | When | Closed by |
+|---|---|---|
+| `page` | a book is `reading` or rated 4–5, the reader has page rules, and its page lacks sections; their rules gain a section | writing its sections (`book_sections`) until none is missing |
+| `news_check` | an author page is written; again 30 days after each check | `update authors set news_checked_at = now()` |
+| `news_why` | `author_news` saved without a why | writing the why |
+| `story` | a niche reaches 3 books with no story | writing `niche_stories` |
+| `rescore` | the ranking's factors change (`apply_existing`) | scoring that book again (a weights-only change re-ranks everything at once; nothing owed) |
+| `isbn`, `cover` | a book arrives without one (cover: and `book_facts` has none) | writing the column |
+| `author_page` | **never by itself**: only when the reader says yes | writing its sections (`author_sections`) |
+
+So you **never** insert what that table already owes, and **never** `update owed set state = 'done'`: do the work.
+
+You write to Later only in these moments:
+
+1. **The reader says "later" to something nothing else owes**: author pages ("do pages for every author I own 2+ books
+   by" → one row each), or the page of a book they aren't reading and didn't rate 4–5:
+   `insert into owed (kind, subject) values ('author_page', 'author:eric-ries') on conflict do nothing;`
+2. **A big live request**: in a session with the reader, do up to 5 writes, then put the rest in Later, unless they
+   said "all of them now".
+3. **You can't do one** (nothing found, a source down): `select owed_fail(<id>, 'one line why')`. It comes back in 30
+   days; the third time the reader sees your note with *Try again*.
+4. **A run** ([DAILY.md](DAILY.md), *A run*): `owed_claim`, pay, fail with a note, a two-line summary in `runs`.
+
+Each insert ends your reply with one line: *"I've put Eric Ries's page in Later."*
+
+**No offers in chat.** Never end a reply with "want me to also…?". If the reader asked, do it now. If it's clearly
+wanted but not now, put it in Later and say so in one line. Otherwise say nothing: the site offers things one at a
+time, when the reader is looking at them.
 
 ## The reader's goal
 

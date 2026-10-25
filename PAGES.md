@@ -9,8 +9,9 @@ reader is Maya, who advises early-stage AI founders.
 ## When pages are built
 
 - **The reader asks:** "write up The Lean Startup", "tell me about Eric Ries".
-- **A book is being read:** `todo` lists `description:<slug>` for books with `status = 'reading'` and no page.
-  Scheduled runs build those ([DAILY.md](DAILY.md)).
+- **Later has it:** a book being read or rated 4–5 is owed its page once the reader has page rules, and runs build
+  those ([DAILY.md](DAILY.md), *A run*). "Write up X" in a session means now, whatever Later says; the page closes its
+  Later row by itself.
 - **The first session:** one page, for the first book, right after the page question ([START.md](START.md)).
 
 ## When the reader comes from the site
@@ -70,7 +71,9 @@ goes straight to the first pass.
 
 Their answer becomes their page rules, saved once and used for every book: exactly the sections they picked, in the
 order they named. Nothing else.
-"Add critiques to my book pages" later → change the rules, and offer to redo existing pages.
+"Add critiques to my book pages" later → change the rules. Every written page that now lacks the new section goes in
+Later by itself; don't offer to redo them. If they say "add it to all of them now", do up to 5 in this session and
+say the rest are in Later.
 
 The same once for authors, before the first author page, numbered the same way: *1. who they are, 2. how to
 remember them, 3. big ideas, 4. their books, 5. how people talk about them, 6. critiques, 7. a cheat sheet, 8. their
@@ -252,10 +255,10 @@ already done by [BOOKS.md](BOOKS.md); steps 0–5 are here for reference and for
 | 1 | Look before you search | always |
 | 2–4 | Shelf, book row, score | done when the book was added ([BOOKS.md](BOOKS.md)) |
 | 5 | The author's facts | before the author page |
-| 6 | Search the web, store what you find | before a new author's first page; after that, only if `todo` lists `author_check` |
-| 7 | The book page | on request, or `todo` `description:` |
-| 8 | The author page | on request, or `todo` `author_page:` |
-| 9 | The playbook: link it to the shelf | links: when the niche has 2+ authors; story: when `todo` lists `story:` |
+| 6 | Search the web, store what you find | before a new author's first page; after that, only on a run when Later has a news check for them |
+| 7 | The book page | on request, or on a run (Later `page`) |
+| 8 | The author page | on request (a yes, now or as a Later row), or on a run (Later `author_page`) |
+| 9 | The playbook: link it to the shelf | links: when the niche has 2+ authors; story: on request or on a run (Later `story`) |
 | 10 | Drill cards | on request |
 | 11 | What's next | always |
 
@@ -414,7 +417,7 @@ change:** a real table books link to by id, replacing the view.
 
 **A new author always gets a fresh search** before their first page (step 8): the page should start from what's
 current, not only from the shared articles. New = no page yet (`summary is null`) and never checked by you
-(`news_checked_at is null`). After that, search only when `todo` lists `author_check:<slug>`. It does when the author
+(`news_checked_at is null`). After that, search only when a run hands you its Later news check. Later holds one when the author
 has a page, nothing from the last 30 days, you haven't checked in 30 days, and the shared job hasn't checked this week
 ([COMMONS.md](COMMONS.md)). Search the last 12 months. Store real finds privately; they stay this reader's. Link each item to the author and to the book it is
 about. `author_id` is the main author; `news_authors` adds the others (a joint interview). One request:
@@ -477,8 +480,9 @@ select sections, missing from pages where kind = 'book' and slug = 'the-lean-sta
 Remove a section (only when the reader says remove: *Write, then shape*, **Restyle, never remove**):
 `delete from book_sections where book_slug = '…' and section_id = '…'`.
 
-**After a rules change** ("add critiques to my book pages"): new sections show up as `missing` in `pages`. Find what
-to offer filling: `select slug from pages where kind = 'book' and has_page and 'critiques' = any(missing)`.
+**After a rules change** ("add critiques to my book pages"): new sections show up as `missing` in `pages`, and every
+written page that lacks one is in Later. To see them: `select slug from pages where kind = 'book' and has_page and
+'critiques' = any(missing)`.
 
 **Dropping a section everywhere** ("take core ideas off my pages"): save the rules without it. Every page loses
 that section in the same change, and undo brings it all back. Renaming a section's heading keeps its text.
@@ -571,8 +575,8 @@ values ('founder', 'idea', 'Idea and validation', '…one sentence: why this nic
 on conflict (shelf, niche) do update set body = excluded.body, title = excluded.title, headline = excluded.headline;
 ```
 
-With one book and one author there is nothing to link yet. Wait for the second author, and for `todo` to ask for
-the story.
+With one book and one author there is nothing to link yet. Wait for the second author; Later gets the story when
+the niche has 3 books.
 
 **PROPOSED — needs server change:** suggested links: a read-only view that lists commons books/authors related to
 the new one (e.g. same commons article, overlap) so the AI can propose "add The Startup Owner's Manual?".
@@ -591,14 +595,10 @@ insert into cards (book_id, kind, front, back, trap) values
 
 ## 11. What's next
 
-```sql
-select * from todo order by priority;
-select * from hints;
-```
-
 Give the reader the links to what you just built (`reading.hadmoney.com/books/the-lean-startup`,
-`/authors/eric-ries`) and, in one line each, what is waiting. Don't silently do it all. To skip an item:
-`insert into work_done (item_key) values ('<item_key>');`
+`/authors/eric-ries`). Don't list or offer what's waiting: Later holds it (README, *Later*). If you left part of the
+request for later, it's already there or you put it there: say it in one line (*"The other four pages are in
+Later."*).
 
 ## Check the pages
 

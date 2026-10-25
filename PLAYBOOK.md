@@ -16,7 +16,8 @@ authors **on this reader's shelf** get links. Everything else goes in a book pag
 
 ## When
 - **Links** (`niche_roles`, `pairs`, `refs`, `book_links`): once the niche has 2+ authors.
-- **The story** (`niche_stories`): when `todo` lists `story:<shelf>:<niche>`. It does once a niche has 3 books.
+- **The story** (`niche_stories`): on request, or on a run when Later has it. Later gets it once a niche has 3 books;
+  writing the story closes it.
 - When the reader asks "how do these connect?" or a news item shows a new link (a review, a joint talk).
 - Don't write a lineage from one author.
 

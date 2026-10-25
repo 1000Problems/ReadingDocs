@@ -91,8 +91,10 @@ about them to sound personal.
 save their answer as their page rules (say the order back as you save), then write the first pass of **this one**
 book page, every section, straight to the site. No drafts in chat. Then one message: *"Your page is up"*, the link,
 one line per section, and an invitation to react in plain words. Shape it from what they say ([PAGES.md](PAGES.md),
-*Write, then shape*). This is the page they'll judge you by. Offer the author page the same way (*"Want a page for
-Eric Ries?"*); build it only on a yes.
+*Write, then shape*). This is the page they'll judge you by. If they'd rather see pages later, nothing to write: a book they're reading
+or rated 4–5 is already in Later (README, *Later*); for any other book, put its page there
+(`insert into owed (kind, subject) values ('page', 'book:<slug>') on conflict do nothing`) and say so in one line.
+Offer the author page once (*"Want a page for Eric Ries?"*); build it only on a yes, and a "later" puts it in Later.
 
 **Scene 4 — more books, if they want.** Suggest 3–5 that fit their goal, in one line each. On a yes, the same fast
 add, all in one request, no pages. Link: the home
@@ -110,7 +112,7 @@ End with three or four lines, not a report:
 - if your product supports scheduled tasks, offer a weekly one that runs [DAILY.md](DAILY.md). The home page warns
   the reader when their AI hasn't written in over a week.
 
-Then `select * from todo order by priority` and offer what's waiting in one line each.
+Don't list what's waiting: the site shows it under **Later** and offers things one at a time.
 
 ## Exact SQL
 

@@ -10,12 +10,12 @@ Read news from one view: `news`. One row per URL: `mine` = you added it (only th
 commons job found it for everyone.
 
 - A new author (no page yet, never checked by you) gets a fresh search before their first page. After that, don't
-  search unless `todo` lists `author_check` for them. It does only when nothing is recent (30 days) and the job hasn't
+  search unless a run hands you their Later news check. Later hides it while anything is recent (30 days) or the job
   looked this week.
 - When you do search: add an `authors` row if the author has none, insert what you find into `author_news`, then set
   `news_checked_at`. It stays private to this reader. The job never reads it.
-- `todo` lists `author_check` when the author has a page, nothing from the last 30 days, you haven't checked in 30 days, and
-  the job hasn't checked in 7. Search the last 12 months.
+- Later shows a news check when the author has a page, nothing from the last 30 days, you haven't checked in 30
+  days, and the job hasn't checked in 7. Search the last 12 months; `news_checked_at = now()` closes it.
 - Book facts by ISBN: `select * from book_facts where isbn13 = '9780307887894'`.
 
 ## For the job (holds the commons key)

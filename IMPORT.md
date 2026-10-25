@@ -188,10 +188,9 @@ Look for:
   the file must be clean first.
 - **Tags show.** The book page shows every tag, so `import:…` appears on each book. Ask him once: *"OK if each book
   shows where it came from?"* If not, drop the batch tag after the import is checked (a bulk update: ask first).
-- **`todo` grows, once per author.** `todo` asks for one author page per distinct author, not per book: a
-  2,000-book import by ~900 authors means ~900 items. That's the right work, done over time (section 7), not now. If
-  `todo` shows the same author twice, the spellings weren't unified: fix the book rows, don't write two pages.
-  **PROPOSED — needs server change:** group them in `todo` ("900 authors need a page") so the list stays readable.
+- **Later stays small.** An import owes pages only for books he's reading or rated 4–5 (once he has page rules), plus
+  ISBNs and covers the shared facts don't have. Author pages aren't owed at all until he says yes (section 7). If the
+  same author shows up twice in `authors`, the spellings weren't unified: fix the book rows, don't write two pages.
 - Then give him the link (`reading.hadmoney.com/`) and do the rest of the batches.
 
 Re-import (a newer export, a month later): the same insert skips what's there. For changes to books already in the
@@ -285,21 +284,22 @@ The import gives him the library. The rest comes slowly, best first, and never a
 - **On request:** "tell me about this one" → its page, in his sections ([PAGES.md](PAGES.md)).
 - **Rich pages** (note, score, book page) only for books he rated 5 (then 4), the ones he's reading, or the ones he
   asks about.
-- **Author pages for every author**, one page each however many books he owns, most-owned first, then authors of
-  books he's reading or rated, then the rest:
+- **Author pages, only on a yes.** Ask once, after the import: *"Want pages for the authors you own several books
+  by?"* On a yes, put one `author_page` row per author in Later ([AUTHORS.md](AUTHORS.md), *The page*), most-owned
+  first; runs write them over time. To see who that is:
   ```sql
   select a.slug, a.name, count(b.id) as books from authors a
     join books b on a.name = any(string_to_array(regexp_replace(b.author, ',\s*', ',', 'g'), ','))
    where a.summary is null group by 1, 2 order by 3 desc;
   ```
-  Each page follows [AUTHORS.md](AUTHORS.md) (shared facts and articles first). At 900 authors this takes weeks;
-  that's fine.
+  Each page follows [AUTHORS.md](AUTHORS.md) (shared facts and articles first). At hundreds of authors this takes
+  weeks; that's fine.
 - **Covers:** don't copy them. Books whose ISBN is in `book_facts` show the shared cover already, and more appear as
   the weekly job finds them. For the books he cares about most, look one up now (README, *Covers and author photos*).
   Missing ISBNs: from `book_facts` by title, else a source you opened.
 - **Gaps worth a line:** "You have volumes 1 and 3 of …", "eleven books by Grove, no author page yet".
 
-Scheduled runs do this in small batches ([DAILY.md](DAILY.md), *A large library*).
+Runs do this in small batches from Later ([DAILY.md](DAILY.md), *A run*).
 
 End the import session with the next step: *"Next: pick how you rank books, and I'll score your rated ones first."*
 Imported books have no rank, so the home page has no real order until then; his ratings are the first signal.
