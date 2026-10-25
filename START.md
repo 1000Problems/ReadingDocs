@@ -35,9 +35,11 @@ Draft their Reading:
 - **Goal** — one or two sentences: what they read *for*, in their words. ("Talk credibly with people starting AI
   companies." "Cook from home without recipes.") Everything else is written for this.
 - **3–5 shelves** — the areas of their life where reading matters. Name them the way they talk ("Founder",
-  "Spanish kitchen", "Raising Lucía"). Never "Books", "Main" or "General". One line each on what belongs there. One
-  shelf is `home`.
-- **Niches** — the sub-topics they actually care about. Make a niche only when a book goes into it; no empty ones.
+  "Spanish kitchen", "Raising Lucía"). Never "Books", "Main" or "General". One line each on what belongs there, and a
+  ranking rule: one sentence on what matters on that shelf. A new space has no shelves; you make them
+  ([SHELVES.md](SHELVES.md)).
+- **Subshelves** — the sub-topics they actually care about, inside a shelf. Make one only when a book goes into it; no
+  empty ones.
 - **A ranking** — how *they* decide a book matters. 2–6 factors from the catalog, weights summing to 100, named in
   their words ("Will a mentor ask?" beats "Importance"). See [RANKING.md](RANKING.md).
 - **The first book** — the one that will make them say "yes, that's me": a book they're reading, one they mentioned,
@@ -73,10 +75,10 @@ they haven't seen.
 Each scene is one request (one change they can undo) and ends with a link to where it shows (README, *A link with
 every change*). Tell them what to open, then go on.
 
-**Scene 1 — the frame.** Profile, goal, shelves and niches, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
+**Scene 1 — the frame.** Profile, goal, shelves and subshelves, ranking (or the default, if the goal is still unknown). Link: `reading.hadmoney.com/`.
 
 Shelf name and ranking on a first add: if the reader only said "add this book" and you don't know enough to plan
-shelves, name the home shelf yourself from what you know and **show** it, don't ask: one line in the plan, or right
+shelves, name their first shelf yourself from what you know and **show** it, don't ask: one line in the plan, or right
 after the add (*"I called your shelf "Catching up"; rename it anytime. Scores use the default ranking until you tell
 me what makes a book worth your time."*).
 
@@ -98,7 +100,7 @@ Offer the author page once (*"Want a page for Eric Ries?"*); build it only on a 
 
 **Scene 4 — more books, if they want.** Suggest 3–5 that fit their goal, in one line each. On a yes, the same fast
 add, all in one request, no pages. Link: the home
-page again, now ranked. Their pages wait until they ask, or until they start reading one. If one niche now has two authors, write its playbook
+page again, now ranked. Their pages wait until they ask, or until they start reading one. If one subshelf now has two authors, write its playbook
 ([PLAYBOOK.md](PLAYBOOK.md)).
 If you saved the two book questions for later, ask them here, with the first book on screen.
 
@@ -107,7 +109,7 @@ If you saved the two book questions for later, ask them here, with the first boo
 End with three or four lines, not a report:
 
 - what you built, with the two or three best links;
-- one thing you noticed about them from the books ("Four of your eight are about hiring. Want a People niche?");
+- one thing you noticed about them from the books ("Four of your eight are about hiring. Want a People subshelf?");
 - the day-two sentence: *"Next time just say 'add Zero to One' or 'update my reading'."*;
 - if your product supports scheduled tasks, offer a weekly one that runs [DAILY.md](DAILY.md). The home page warns
   the reader when their AI hasn't written in over a week.
@@ -116,23 +118,26 @@ Don't list what's waiting: the site shows it under **Later** and offers things o
 
 ## Exact SQL
 
-Scene 1, one request. A new space already has a home shelf `books`; unset it first. `blurb` is the line the site shows
-under a shelf; `sentence` is the same line for other AIs. Write both.
+Scene 1, one request. A new space has no shelves. `blurb` is the line the site shows under a shelf; `sentence` is the
+same line for other AIs; `ranking_rule` is what matters on it. Write all three.
 
 ```sql
-update shelves set home = false where home;
 update profiles set display_name = 'Maya';
 insert into profiles (display_name) select 'Maya' where not exists (select 1 from profiles);
-insert into shelves (slug, name, position, home, blurb, sentence, niches) values
-  ('founder', 'Founder', 0, true,
+insert into shelves (slug, name, position, blurb, sentence, ranking_rule) values
+  ('founder', 'Founder', 0,
    'Books the AI founders I advise expect me to have read.',
    'Books the AI founders I advise expect me to have read.',
-   '[{"id":"idea","label":"Idea and validation","sentence":"Testing whether anyone wants it before building it."},
-     {"id":"people","label":"People","sentence":"Hiring, managing, firing."}]'),
-  ('kitchen', 'Spanish kitchen', 1, false,
-   'Cooking from home, proportions right.', 'Cooking from home, proportions right.', '[]')
-on conflict (slug) do update set home = excluded.home, blurb = excluded.blurb,
-  sentence = excluded.sentence, niches = excluded.niches;
+   'Will a founder I advise ask whether I have read it?'),
+  ('kitchen', 'Spanish kitchen', 1,
+   'Cooking from home, proportions right.', 'Cooking from home, proportions right.',
+   'Will it make a weeknight dinner better?')
+on conflict (slug) do update set blurb = excluded.blurb,
+  sentence = excluded.sentence, ranking_rule = excluded.ranking_rule;
+insert into subshelves (shelf, slug, name, sentence) values
+  ('founder', 'idea', 'Idea and validation', 'Testing whether anyone wants it before building it.'),
+  ('founder', 'people', 'People', 'Hiring, managing, firing.')
+on conflict (shelf, slug) do update set name = excluded.name, sentence = excluded.sentence;
 
 -- the goal: merged into the active book_note rules, so the other settings stay
 insert into templates (kind, rules)

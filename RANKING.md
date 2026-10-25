@@ -1,8 +1,9 @@
 # Ranking
 
-Every book gets one number, `rank`, and the site orders by it. The **reader** decides what the number means. You write their system down as a ranking template, score each book against it, and the database does the arithmetic.
+Two numbers, kept apart:
 
-One ranking system per space for now.
+- **The book score** (`books.book_score`): one per book, shelf-blind, orders the Library (the home page). The **reader** decides what it means. You write their system down as a ranking template, score each book's factors, and the database does the arithmetic. One ranking template per space.
+- **The shelf score** (`shelf_books.score`, 1–100, on the All row): one per book per shelf, against that shelf's `ranking_rule`. It orders the shelf. See *Ranking a shelf* below and [SHELVES.md](SHELVES.md).
 
 ## The template
 One row in `templates` with `kind = 'ranking'`. Its `rules`:
@@ -29,7 +30,7 @@ In the first session, draft it from what you know (START.md). Revisit it once th
 4. Score every book.
 
 ## Scoring a book
-Write `rank_detail = {"scores": {<factor>: 1–10, …}}` with a score for **exactly** the template's factors, plus `rank_why`: one line naming the strongest evidence. The database computes `rank` and refuses scores that don't match the factors.
+Write `rank_detail = {"scores": {<factor>: 1–10, …}}` with a score for **exactly** the template's factors. The database computes `book_score` (writing it directly is refused) and refuses scores that don't match the factors.
 
 - Score against the reader's world, not the general public's. A book every founder quotes and nobody else reads is a
   9 for Maya.
@@ -39,10 +40,28 @@ Write `rank_detail = {"scores": {<factor>: 1–10, …}}` with a score for **exa
 ## Changing it
 - "This book should be higher": change that book's scores.
 - "Recent books matter more to me": change the template and add a calibration line.
-  - **Only weights (or names, sentence, note) change:** every rank is recomputed in the same change, from the scores
-    the books already have. Nothing to re-score. Undo puts every rank back, until another book is edited.
+  - **Only weights (or names, sentence, note) change:** every book score is recomputed in the same change, from the
+    scores the books already have. Nothing to re-score. Undo puts every book score back, until another book is edited.
   - **The factors change:** the old scores no longer fit. Save with `apply_existing = true` and every scored book gets
     a `rescore` row in Later; runs re-score them, best first. Re-scoring a book closes its row.
+
+## Ranking a shelf
+One score per book per shelf, on its All row (`subshelf = ''`). Subshelves have no scores. When the reader asks to rank
+a shelf (or the site's *Rank this shelf*):
+
+1. Read the shelf's `ranking_rule` and `blurb`. No rule → ask the reader what matters on this shelf, save it as one
+   sentence (`update shelves set ranking_rule = …`), then go on.
+2. Read its books: `shelf_books where shelf = … and subshelf = ''` joined to `books` (`rank_detail`, `book_score`,
+   the current `score`, `score_why`, `score_by`, `angle`).
+3. Score pairwise against the rule: is this book above or below that one, *for this rule*? Use the whole 1–100 range;
+   don't bunch everything at 70–90. The book score is a hint, not the answer.
+4. Never change a `score_by = 'you'` row (the reader set it, e.g. by drag on the site) without saying so in the list.
+5. Write or refresh `angle` where it's empty: how to read this book *on this shelf*. `score_why`: one line, the
+   strongest evidence against the rule.
+6. Show the full list (score, title, one-line why) and wait for a yes.
+7. Write it in one request, and set `shelves.ranked_at = now()`.
+
+"Rank the new ones" is the same for books with a null score only, placed among the existing scores without moving them.
 
 ## Exact SQL
 What's on offer and what's active:
@@ -65,15 +84,30 @@ on conflict (kind) do update set rules = excluded.rules, apply_existing = exclud
 ```
 Score books (one change for the lot):
 ```sql
-update books set rank_detail = '{"scores": {"talk": 9, "readers": 8, "current": 5, "canon": 8, "mentor": 9}}',
-       rank_why = 'Named on most founder podcasts; mentors ask about it.' where slug = 'zero-to-one';
-update books set rank_detail = '{"scores": {"talk": 8, "readers": 9, "current": 4, "canon": 8, "mentor": 7}}',
-       rank_why = 'Assigned in nearly every accelerator program.' where slug = 'the-lean-startup';
-update books set rank_detail = '{"scores": {"talk": 7, "readers": 7, "current": 3, "canon": 9, "mentor": 6}}',
-       rank_why = 'On every decision-making syllabus.' where slug = 'thinking-fast-and-slow';
+update books set rank_detail = '{"scores": {"talk": 9, "readers": 8, "current": 5, "canon": 8, "mentor": 9}}'
+ where slug = 'zero-to-one';
+update books set rank_detail = '{"scores": {"talk": 8, "readers": 9, "current": 4, "canon": 8, "mentor": 7}}'
+ where slug = 'the-lean-startup';
+update books set rank_detail = '{"scores": {"talk": 7, "readers": 7, "current": 3, "canon": 9, "mentor": 6}}'
+ where slug = 'thinking-fast-and-slow';
 ```
 Check:
 ```sql
-select slug, rank, rank_why from books order by rank desc nulls last;
+select slug, book_score from books order by book_score desc nulls last;
 select title, state from owed where kind = 'rescore' order by id;
+```
+Rank a shelf: read the rule and the books, then (after the reader's yes) write every score in one request:
+```sql
+select slug, name, blurb, ranking_rule, ranked_at from shelves where slug = 'founder';
+select b.slug, b.title, b.book_score, b.rank_detail, sb.score, sb.score_why, sb.score_by, sb.angle
+  from shelf_books sb join books b on b.id = sb.book_id
+ where sb.shelf = 'founder' and sb.subshelf = '' order by sb.score desc nulls last, b.book_score desc nulls last;
+```
+```sql
+update shelf_books set score = 92, score_why = 'Named on most founder podcasts; mentors ask about it.',
+       angle = 'Have a view on the monopoly chapter; founders will test it.'
+ where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'zero-to-one');
+update shelf_books set score = 85, score_why = 'Assigned in nearly every accelerator program.'
+ where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'the-lean-startup');
+update shelves set ranked_at = now() where slug = 'founder';
 ```

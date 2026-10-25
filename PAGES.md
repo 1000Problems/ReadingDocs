@@ -275,7 +275,7 @@ already done by [BOOKS.md](BOOKS.md); steps 0–5 are here for reference and for
 | 6 | Search the web, store what you find | before a new author's first page; after that, only on a run when Later has a news check for them |
 | 7 | The book page | on request, or on a run (Later `page`) |
 | 8 | The author page | on request (a yes, now or as a Later row), or on a run (Later `author_page`) |
-| 9 | The playbook: link it to the shelf | links: when the niche has 2+ authors; story: on request or on a run (Later `story`) |
+| 9 | The playbook: link it to the shelf | links: when the subshelf has 2+ authors; story: on request or on a run (Later `story`) |
 | 10 | Drill cards | on request |
 | 11 | What's next | always |
 
@@ -286,7 +286,7 @@ Every note, angle, score and card is written for *this* reader. Read their goal 
 ```sql
 select display_name from profiles;
 select rules ->> 'note' as goal from rules where kind = 'book_note';
-select slug, name, home, blurb, niches from shelves;
+select slug, name, blurb, ranking_rule from shelves;
 select rules from rules where kind = 'ranking';
 ```
 
@@ -301,7 +301,7 @@ settings stay. That is its one home; other AIs read it from there.
 Read everything that already exists, in your space and in the shared commons. One request:
 
 ```sql
-select slug, title, author, shelf, niche, status from books where title ilike '%lean startup%';
+select slug, title, author, status from books where title ilike '%lean startup%';
 select * from search('lean startup');
 select isbn13, title, authors, cover_url, kindle_asin, year, pages, checked_at
   from book_facts where isbn13 = '9780307887894' or title ilike '%lean startup%';
@@ -325,34 +325,37 @@ cover URL; `author_facts` has `eric-ries`; `author_articles` has two items (Fort
 **PROPOSED — needs server change:** a `searches` record (subject book/author, query, ran_at, found count, by
 space or by job), shared or private, so "searched, nothing found" is visible and nobody repeats it.
 
-## 2. Shelf and niche
+## 2. Shelf and subshelf
 
 ```sql
-select slug, name, home, sentence, niches from shelves;
+select slug, name, sentence, ranking_rule from shelves;
+select shelf, slug, name from subshelves;
 ```
 
-A book without a shelf goes to the home shelf. A book's niche must be one of its shelf's `niches[].id`; otherwise the
-write is refused and the error lists the valid ones. If the right shelf or niche is missing, create it, then tell the
-reader in one line. Example, one request: make "Founder" the home shelf with an "Idea and validation" niche.
+A book can be on several shelves, and on a subshelf inside each ([SHELVES.md](SHELVES.md)). A subshelf that doesn't
+exist is refused and the error lists the valid ones. If the right shelf or subshelf is missing, create it, then tell
+the reader in one line. Example, one request: a "Founder" shelf with an "Idea and validation" subshelf.
 
 ```sql
-update shelves set home = false where home;
-insert into shelves (slug, name, position, home, blurb, sentence, niches) values
-  ('founder', 'Founder', 0, true,
+insert into shelves (slug, name, position, blurb, sentence, ranking_rule) values
+  ('founder', 'Founder', 0,
    'Books the AI founders I advise expect me to have read.',
    'Books the AI founders I advise expect me to have read.',
-   '[{"id":"idea","label":"Idea and validation","sentence":"Testing whether anyone wants it before building it."}]')
-on conflict (slug) do update set home = excluded.home, blurb = excluded.blurb,
-  sentence = excluded.sentence, niches = excluded.niches;
+   'Will a founder I advise ask whether I have read it?')
+on conflict (slug) do update set blurb = excluded.blurb,
+  sentence = excluded.sentence, ranking_rule = excluded.ranking_rule;
+insert into subshelves (shelf, slug, name, sentence) values
+  ('founder', 'idea', 'Idea and validation', 'Testing whether anyone wants it before building it.')
+on conflict (shelf, slug) do update set name = excluded.name, sentence = excluded.sentence;
 ```
 
 `blurb` is the line the site shows under the shelf; `sentence` is the same line for other AIs.
 
-Add a niche to a shelf that exists (append; don't rewrite the others):
+Add another subshelf to a shelf that exists:
 
 ```sql
-update shelves set niches = niches || '[{"id":"fundraising","label":"Fundraising","sentence":"…"}]'::jsonb
- where slug = 'founder';
+insert into subshelves (shelf, slug, name, sentence) values ('founder', 'fundraising', 'Fundraising', '…')
+on conflict (shelf, slug) do nothing;
 ```
 
 ## 3. The book row
@@ -364,23 +367,29 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 | `title`, `author` | exact; `author` is the full name(s), first author first. Spell each author the same way on every book: the database matches authors by slug (step 5) |
 | `isbn`, `kindle_asin` | from `book_facts`, else from the web, else null |
 | `cover_url` | empty when `book_facts` has a cover (the site shows it); else Open Library now, else empty (README, *Covers and author photos*) |
-| `shelf`, `niche` | from step 2 |
 | `status` | `want` · `reading` · `finished` · `abandoned` |
 | `tags` | a few lowercase words |
 | `note` | the short note, per `book_note` rules (default 40–90 words, plain prose). Why *this* book for *this* reader, from their goal and what you know of their week. A note that would fit anyone is wrong |
-| `founder_angle` | one or two sentences: how this book shows up in *this reader's* life (the column name is historical; it's for every reader) |
-| `overlap` | which other book covers the same ground, and whether one is enough |
 | `why_read` | the reader's own reason, if they gave one. Don't write it for them |
 
+Then, on `shelf_books` (the All row of each shelf it's on): `angle`, one or two sentences on how this book shows up in
+*this reader's* life on this shelf, and `overlap`, which other book here covers the same ground and whether one is
+enough. Place it on a subshelf with a second row; its All row is already there.
+
 ```sql
-insert into books (title, author, isbn, kindle_asin, status, shelf, niche, tags,
-                   note, founder_angle, overlap)
+insert into books (title, author, isbn, kindle_asin, status, tags, note)
 values ('The Lean Startup', 'Eric Ries', '9780307887894', 'B004J4XGN6',
-        'want', 'founder', 'idea', '{startups,validation}',
-        '…40–90 words: why this book, for this reader…',
+        'want', '{startups,validation}',
+        '…40–90 words: why this book, for this reader…')
+returning id, slug;
+insert into shelf_books (shelf, book_id, angle, overlap)
+values ('founder', (select id from books where slug = 'the-lean-startup'),
         '…how MVP and validated learning come up when an AI founder pitches you…',
         'Heavy overlap with The Startup Owner''s Manual (Steve Blank, Bob Dorf): either covers customer development.')
-returning id, slug;
+on conflict (shelf, subshelf, book_id) do update set angle = excluded.angle, overlap = excluded.overlap;
+insert into shelf_books (shelf, subshelf, book_id)
+values ('founder', 'idea', (select id from books where slug = 'the-lean-startup'))
+on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
 ## 4. Score it
@@ -389,15 +398,17 @@ returning id, slug;
 select rules from rules where kind = 'ranking';
 ```
 
-Score **exactly** the active factors, 1–10 each; `rank` is computed. One line of evidence in `rank_why`. Books under
+Score **exactly** the active factors, 1–10 each; `book_score` is computed. Then its score on each shelf (1–100,
+against the shelf's rule, one line in `score_why`; [RANKING.md](RANKING.md), *Ranking a shelf*). Books under
 five years old score at most 5 on `endurance`. If the reader has no ranking yet the default (Importance) applies;
 see [RANKING.md](RANKING.md) to set theirs.
 
 ```sql
-update books set rank_detail = '{"scores": {"talk": 9, "readers": 9, "current": 5, "canon": 9, "mentor": 8}}',
-                 rank_why = '…the strongest evidence, one line…'
+update books set rank_detail = '{"scores": {"talk": 9, "readers": 9, "current": 5, "canon": 9, "mentor": 8}}'
  where slug = 'the-lean-startup';
-select slug, rank, rank_why from books where slug = 'the-lean-startup';
+update shelf_books set score = 85, score_why = '…the strongest evidence against the rule, one line…'
+ where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'the-lean-startup');
+select slug, book_score from books where slug = 'the-lean-startup';
 ```
 
 (Scores shown are for an "Ask"-style template; use the reader's factors.)
@@ -545,18 +556,19 @@ Bob Dorf), added earlier with its authors. If the shelf has only this book, skip
 Find what it connects to **on this reader's shelf**:
 
 ```sql
-select slug, title, author, niche from books where shelf = 'founder';
-select a.slug, r.niche, r.role from niche_roles r join authors a on a.id = r.author_id where r.shelf = 'founder';
-select * from niche_stories where shelf = 'founder';
+select b.slug, b.title, b.author, sb.subshelf from shelf_books sb join books b on b.id = sb.book_id
+ where sb.shelf = 'founder' order by sb.subshelf, b.slug;
+select a.slug, r.subshelf, r.role from shelf_roles r join authors a on a.id = r.author_id where r.shelf = 'founder';
+select * from shelf_stories where shelf = 'founder';
 ```
 
 Then, one request, only what is true and sourced:
 
 ```sql
--- why this author matters in this niche (one line)
-insert into niche_roles (shelf, niche, author_id, role)
+-- why this author matters on this subshelf (one line)
+insert into shelf_roles (shelf, subshelf, author_id, role)
 values ('founder', 'idea', (select id from authors where slug = 'eric-ries'), '…one line…')
-on conflict (shelf, niche, author_id) do update set role = excluded.role;
+on conflict (shelf, subshelf, author_id) do update set role = excluded.role;
 
 -- two books on the shelf (relation: related, sequel, contrast, covers)
 insert into book_links (from_book, to_book, relation, note)
@@ -578,22 +590,22 @@ values ((select id from authors where slug = 'steve-blank'), (select id from aut
 on conflict (from_author_id, to_author_id, source) do update set context = excluded.context, source_url = excluded.source_url;
 ```
 
-Then the niche story (`niche = ''` for the whole shelf), per `playbook` rules: 120–250 words, full names, *The
+Then the subshelf story (`subshelf = ''` for the whole shelf), per `playbook` rules: 120–250 words, full names, *The
 lineage* required, optional front matter `title:` / `headline:`.
 
 ```sql
-insert into niche_stories (shelf, niche, title, headline, body)
-values ('founder', 'idea', 'Idea and validation', '…one sentence: why this niche exists…',
+insert into shelf_stories (shelf, subshelf, title, headline, body)
+values ('founder', 'idea', 'Idea and validation', '…one sentence: why this subshelf exists…',
 '## The lineage
 …
 
 ## Where to start
 …')
-on conflict (shelf, niche) do update set body = excluded.body, title = excluded.title, headline = excluded.headline;
+on conflict (shelf, subshelf) do update set body = excluded.body, title = excluded.title, headline = excluded.headline;
 ```
 
 With one book and one author there is nothing to link yet. Wait for the second author; Later gets the story when
-the niche has 3 books.
+the subshelf has 3 books.
 
 **PROPOSED — needs server change:** suggested links: a read-only view that lists commons books/authors related to
 the new one (e.g. same commons article, overlap) so the AI can propose "add The Startup Owner's Manual?".
@@ -620,7 +632,8 @@ Later."*).
 ## Check the pages
 
 ```sql
-select slug, shelf, niche, rank, isbn, kindle_asin, (note is not null) as has_note from books where slug = 'the-lean-startup';
+select slug, book_score, isbn, kindle_asin, (note is not null) as has_note from books where slug = 'the-lean-startup';
+select shelf, subshelf, score, score_by from shelf_books where book_id = (select id from books where slug = 'the-lean-startup');
 select count(*) as summaries from notes n join books b on b.id = n.book_id where b.slug = 'the-lean-startup' and n.kind = 'summary';
 select slug, (summary is not null) as has_page, news_checked_at from authors where slug = 'eric-ries';
 select headline, mine, shared from news where author = 'eric-ries';

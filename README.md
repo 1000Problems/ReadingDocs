@@ -20,11 +20,12 @@ needs:
 | Every session after the first, and scheduled runs | [DAILY.md](DAILY.md) |
 | "Do what's waiting", the site's **Run now**, a scheduled run | [DAILY.md](DAILY.md), *A run* |
 | Add a book | [BOOKS.md](BOOKS.md): fast, no pages |
+| Shelves, subshelves, "rank my shelf" | [SHELVES.md](SHELVES.md), [RANKING.md](RANKING.md) |
 | A book or author page, "write up …", "tell me about …" | [PAGES.md](PAGES.md): in the sections the reader chose, written first, shaped after |
 | The reader pasted "Let's shape my Reading page for …" or "Let's talk about … on my Reading" | [PAGES.md](PAGES.md), *When the reader comes from the site* |
 
 When you reach a step, read its file: [AUTHORS.md](AUTHORS.md) (author row, page, cards, news),
-[RANKING.md](RANKING.md) (the reader's ranking, scoring), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf
+[SHELVES.md](SHELVES.md) (the Library, shelves, subshelves), [RANKING.md](RANKING.md) (the reader's ranking, scoring, ranking a shelf), [PLAYBOOK.md](PLAYBOOK.md) (how books and authors on a shelf
 connect), [COMMONS.md](COMMONS.md) (shared facts and news).
 
 ## Connect (once)
@@ -59,8 +60,8 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 
 | Page | Shows |
 |---|---|
-| `reading.hadmoney.com/` | home: shelves, their books in rank order, "Last updated by your AI" |
-| `/shelves/<slug>` | one shelf: its line (`blurb`), niches, books |
+| `reading.hadmoney.com/` | the Library: every book in book-score order, shelves, "Last updated by your AI" |
+| `/shelves/<slug>` | one shelf: its line (`blurb`), subshelves, books in shelf-score order |
 | `/books/<slug>` | the book page: note, score and why, description, cards |
 | `/authors` and `/authors/<slug>` | the shelf's people and stories; one author's page |
 | `/connections/<pair>` | how two authors connect |
@@ -71,8 +72,8 @@ An open book or author page refreshes by itself within a few seconds of a change
 
 ## Prompts from the site
 
-The site never builds anything itself: every "add", "change the look", "move", "rank" or "write the story" control
-copies a prompt for you. When a message is one of those, do exactly that one thing: [SITE-PROMPTS.md](SITE-PROMPTS.md).
+The site never builds anything itself: every "add a book", "change the look", "rank" or "write the story" control
+copies a prompt for you (putting a book on a shelf, *Add to…*, is a site write). When a message is one of those, do exactly that one thing: [SITE-PROMPTS.md](SITE-PROMPTS.md).
 
 ## A link with every change
 
@@ -80,13 +81,13 @@ The reader wants to see what you did, not read about it. Every message that repo
 where it shows:
 
 - **A book added:** the book page and its shelf: `reading.hadmoney.com/books/<slug>` and
-  `reading.hadmoney.com/shelves/<shelf slug>`. Several books at once: the shelf, or the home page.
+  `reading.hadmoney.com/shelves/<shelf slug>`. Several books at once: the shelf, or the Library.
 - **A section written or changed:** straight to that section, `/books/<slug>#<section_id>` or
   `/authors/<slug>#<section_id>` (the page jumps there and highlights it).
-- **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; ranking → `/` (the books
-  re-sort); author facts → `/authors/<slug>`; new drill cards → `/review`.
+- **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; book scores → `/` (the books
+  re-sort); a shelf's ranking → `/shelves/<slug>`; author facts → `/authors/<slug>`; new drill cards → `/review`.
 
-Never link to a page where nothing visible changed. `/review` only when new cards are due there; the home page only
+Never link to a page where nothing visible changed. `/review` only when new cards are due there; the Library only
 when its order or shelves changed. One link is better than three; two only when both changed (a new book and its
 shelf).
 
@@ -128,7 +129,7 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 
 ## Later (owed work)
 
-Some work doesn't need to happen while the reader waits: a book's page, an author's news, a niche's story, a missing
+Some work doesn't need to happen while the reader waits: a book's page, an author's news, a subshelf's story, a missing
 ISBN. That work goes in **Later**, one stored list (`owed`). The reader sees it on the site at `/later`, steers it
 (*Write it next*, *Not now*, *Never*, *Try again*), and any session pays from it, best first.
 
@@ -140,7 +141,7 @@ write does the work (in the same change, so undo reopens it):
 | `page` | a book is `reading` or rated 4–5, the reader has page rules, and its page lacks sections; their rules gain a section | writing its sections (`book_sections`) until none is missing |
 | `news_check` | an author page is written; again 30 days after each check | `update authors set news_checked_at = now()` |
 | `news_why` | `author_news` saved without a why | writing the why |
-| `story` | a niche reaches 3 books with no story | writing `niche_stories` |
+| `story` | a subshelf reaches 3 books with no story | writing `shelf_stories` |
 | `rescore` | the ranking's factors change (`apply_existing`) | scoring that book again (a weights-only change re-ranks everything at once; nothing owed) |
 | `isbn`, `cover` | a book arrives without one (cover: and `book_facts` has none) | writing the column |
 | `author_page` | **never by itself**: only when the reader says yes | writing its sections (`author_sections`) |
@@ -190,5 +191,5 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
      cards today);
    - dedupe on `isbn` (today only the same title + first author is refused);
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
-   - site speed checked at 2,000+ books: home page, shelf page, search.
+   - site speed checked at 2,000+ books: Library, shelf page, search.
 8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.

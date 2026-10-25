@@ -11,7 +11,8 @@ When a message looks like one of these:
 4. "My template" means the reader's rules: every page of that kind. "This page" means one book or author.
 
 What the reader still does directly on the site (you'll see it in `your_changes`): their notes and highlights,
-reading status, rating, Kindle link and import, drill answers, news read/saved, and deletes (with Undo).
+reading status, rating, Kindle link and import, drill answers, news read/saved, deletes (with Undo), **Add to…** (putting
+a book on a shelf or subshelf), and dragging a book on a shelf (it writes that score with `score_by = 'you'`).
 
 ## Later ([DAILY.md](DAILY.md))
 | The prompt says | You do |
@@ -35,21 +36,33 @@ reading status, rating, Kindle link and import, drill answers, news read/saved, 
 ## Books ([BOOKS.md](BOOKS.md))
 | The prompt says | You do |
 |---|---|
-| "add these N books to my shelf "S" (…): - … - …" | the add flow for each (lookup, note, rank on that shelf), then each book page and the shelf |
+| "add these N books to my shelf "S" (…): - … - …" | the add flow for each (lookup, note, put on that shelf, score it there), then each book page and the shelf |
 | "add the book "Q" (find the right edition and author)" | find it; if unsure which one, ask with 2–3 options; then add it |
-| "move "B" … to my shelf "S" … and rank it there" | set its shelf (and niche if the shelf has them), rank it against that shelf's rule ([RANKING.md](RANKING.md)) |
-| "why is "B" ranked where it is on my shelf "S"? …" | make the case up and down against the rule; change the rank only on a yes |
+| "rank "B" on my shelf "S" …" (the book page's **Rank it there**, after Add to…) | the site already put it on the shelf; score it against that shelf's rule among the books already scored there, with `score_why` and `angle`; show where it lands, write on a yes ([RANKING.md](RANKING.md), *Ranking a shelf*) |
 | "make drill cards for "B" …" | drill cards from its page and the reader's notes |
 | "find how "B" connects to the other books and authors …" | [PLAYBOOK.md](PLAYBOOK.md): only connections with sources |
 
-## Shelves ([BOOKS.md](BOOKS.md), [RANKING.md](RANKING.md))
+## Shelves ([SHELVES.md](SHELVES.md), [RANKING.md](RANKING.md))
 | The prompt says | You do |
 |---|---|
 | "create a new shelf: ask me what it's for …" | ask, then name + blurb + ranking rule, suggest books from their library, add only the ones they pick |
-| "rank my shelf "S" against its rule. If it has no rule yet, write one with me first …" | rule first if missing; show the new order with one-line whys; apply on a yes |
 | "help me write what my shelf "S" is for …" | name, blurb, ranking rule; then offer to re-rank |
 | "suggest books for my shelf "S" …" | from their library first, then new ones; add only what they pick |
-| "help me split my shelf "S" into niches …" | propose 2–5 niches and where each book goes; apply only what they agree to |
+| "help me pick my next read (from my shelf "S") …" (an empty **Reading now**) | ask what they're in the mood for, suggest three with a one-line why each, set the chosen one to `status = 'reading'` |
+
+The **Ranking strip** on a shelf's All tab. Each follows [RANKING.md](RANKING.md), *Ranking a shelf*: rule first,
+pairwise against it, never silently over a `score_by = 'you'` score, full list, write on a yes, set `ranked_at`.
+
+| The button | You do |
+|---|---|
+| **Rank this shelf** | every book on the shelf, the whole 1–100 range, `score_why` each, `angle` where empty |
+| **Rank the new ones** | only books with no score, placed among the scored ones without moving those |
+| **Re-space scores** | keep the order, spread the scores over 1–100 (no bunching, no ties unless they're truly equal); show before → after |
+| **Set the rule** | ask what matters on this shelf, save one sentence as `ranking_rule`; then offer to rank |
+| **Argue one book** (a book's shelf chip) | make the case up and down for that book against the rule; change its score only on a yes |
+| **Compare two** (select two books on a shelf) | which of the two ranks higher on this shelf's rule, and why; swap or adjust only on a yes |
+| **Write the story** | the shelf's (or the open subshelf's) story in `shelf_stories` ([PLAYBOOK.md](PLAYBOOK.md)) |
+| **Suggest subshelves** | propose 3–6 subshelves, a one-line sentence each, and which books go where; create and place only what they agree to ([SHELVES.md](SHELVES.md)) |
 
 ## Authors ([AUTHORS.md](AUTHORS.md))
 | The prompt says | You do |
@@ -61,7 +74,7 @@ reading status, rating, Kindle link and import, drill answers, news read/saved, 
 ## Playbook ([PLAYBOOK.md](PLAYBOOK.md))
 | The prompt says | You do |
 |---|---|
-| "write the story of the "N" niche on my shelf "S" …" | the niche story |
+| "write the story of the "N" subshelf on my shelf "S" …" | the subshelf story (`shelf_stories`) |
 | "let's work on the "N" story …" | ask what to change; change only that |
 | "the "N" story … is missing someone …" | ask who, find how they connect, add them with sources |
 | "update the "N" story … with this week's news …" | fold in the week's news about its authors |

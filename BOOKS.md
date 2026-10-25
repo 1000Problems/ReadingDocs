@@ -15,9 +15,9 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 2. **Look it up.** Shared facts first: `select * from book_facts where title ilike '%…%'` (ISBN-13, cover, Kindle ASIN,
    year). Then the web for what is missing: exact title, author(s), ISBN. Never invent an ISBN. Leave it null. Cover: README,
    *Covers and author photos*.
-3. **Shelf and niche.** `select slug, name, niches from shelves`. Pick from what exists. No shelf → the home shelf.
-   A niche must be on the shelf; the error lists the valid ones. To add one:
-   `update shelves set niches = niches || '[{"id":"validation","label":"Idea and validation","sentence":"…"}]'::jsonb where slug = 'founder';`
+3. **Shelves.** `select slug, name, ranking_rule from shelves`. Put it on the shelf(s) it belongs to, and on a
+   subshelf if one fits (`select shelf, slug, name from subshelves`): one `shelf_books` row each ([SHELVES.md](SHELVES.md)).
+   No shelves yet → make the first one with the reader (START.md); a book on no shelf is still in the Library.
 4. **Author.** Full name(s), first author first, co-authors separated by commas. The database gives each author one
    row (and page) the moment the book is written, matched by slug, so **spell an author the same way on every book**:
    "Andrew Grove" and "Andrew S. Grove" are two people to it. Check first: `select slug, name from authors where name ilike '%grove%'`.
@@ -27,10 +27,12 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
    quotes or facts).
 6. **Status:** `want` (default), `reading`, `finished`, `abandoned`. Dates fill themselves.
 7. **Score it** (optional now, expected soon): `rank_detail = '{"scores": {…}}'` with a 1–10 score for every factor
-   of their ranking. `rank` is computed; you can't set it. One line in `rank_why`: the strongest evidence.
+   of their ranking. `book_score` is computed; you can't set it. On each shelf it's on, a score 1–100 against that
+   shelf's rule, with one line in `score_why` and an `angle` (how to read it on this shelf) on the All row
+   ([RANKING.md](RANKING.md), *Ranking a shelf*).
 
-Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `founder_angle`, `overlap` (which book on the
-shelf covers the same ground), `why_read` (the reader's own reason only, never yours).
+Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `why_read` (the reader's own reason only,
+never yours); on `shelf_books`: `angle`, `overlap` (which book on the shelf covers the same ground).
 
 `slug` is made from the title if you leave it out.
 
@@ -54,14 +56,20 @@ Any other book: say nothing about pages. "Write it up" means now ([PAGES.md](PAG
 ## Exact SQL
 
 ```sql
-insert into books (title, author, status, shelf, niche, note) values
-  ('High Output Management', 'Andrew S. Grove', 'want', 'founder', 'people',
+insert into books (title, author, status, note) values
+  ('High Output Management', 'Andrew S. Grove', 'want',
    'Grove wrote the manual for running a team when he ran Intel. Founders hiring their first managers quote his one-on-one and output chapters; read them so you can tell which advice still fits a ten-person AI company and where to push back.');
+insert into shelf_books (shelf, subshelf, book_id)
+values ('founder', 'people', (select id from books where slug = 'high-output-management'))
+on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
 ```sql
-update books set rank_detail = '{"scores": {"mentor": 9, "talk": 8, "endurance": 9}}',
-                 rank_why = 'The management book founders name first when they hire managers.'
+update books set rank_detail = '{"scores": {"mentor": 9, "talk": 8, "endurance": 9}}'
  where slug = 'high-output-management';
-select slug, rank, rank_why from books where slug = 'high-output-management';
+update shelf_books set score = 88, score_why = 'The management book founders name first when they hire managers.',
+       angle = 'Read the one-on-one chapters before your first manager hire.'
+ where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'high-output-management');
+select b.slug, b.book_score, sb.score, sb.score_why from books b
+  join shelf_books sb on sb.book_id = b.id and sb.subshelf = '' where b.slug = 'high-output-management';
 ```

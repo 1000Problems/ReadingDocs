@@ -18,7 +18,7 @@ The example reader is Sam, who owns about 2,000 books and has kept a Goodreads a
 - **It keeps getting better.** Over the following weeks, scheduled runs fill in covers, notes and author pages for the
   books he rates highest, and an author page for every author, the ones he owns most first ([DAILY.md](DAILY.md)).
 
-Books show in rank order, as for every reader. Where a book sits at home is not recorded. Later, ask the reader
+Books show in book-score order, as for every reader. Where a book sits in his house is not recorded. Later, ask the reader
 whether physical position matters to them; if so, that needs a server change.
 
 ## Many books at once (10–200)
@@ -32,7 +32,7 @@ write pages either. Work in passes, so the library appears in minutes and gets r
    needs: exact title, author, ISBN, cover. Not found → null. Never invent one.
 3. **Show the plan in counts, get one yes.** *"200 books: 12 already here, 188 new, 9 with no ISBN found. First 25,
    then the rest in two requests."*
-4. **Write in batches.** Fast-add rows ([BOOKS.md](BOOKS.md)) (title, author, isbn, cover, status, shelf, tags; a note only if you have a real
+4. **Write in batches.** Fast-add rows ([BOOKS.md](BOOKS.md)) (title, author, isbn, cover, status, tags, then its shelf; a note only if you have a real
    reason for this reader). First 25, give the link, then up to 200 rows per request. Each request is one undo. One
    bad row fails its whole request, so clean the list first. Section 4 has the exact SQL.
 5. **Enrich best first.** Afterwards, a few books per request: notes and scores for the 5–10 that matter most to their
@@ -53,7 +53,7 @@ The rest of this page is the full method for a whole library.
    - **photos of his bookcases** — they add the books the export doesn't have, and confirm the ones it does.
 
    Best order: the export first (the base), then photos, one row at a time. Photos alone work too.
-4. **Name the home shelf his way.** The import lands on one shelf first (section 4). Ask what he calls his collection.
+4. **Name the first shelf his way.** The import lands on one shelf first (section 4). Ask what he calls his collection.
    Topic shelves can come later, from his own Goodreads shelves (section 6).
 5. **Show the plan with counts, then wait.** One message: what you'll write, how many rows, in how many requests, and
    that each request can be undone. Example: *"2,043 rows in the export. 1,987 new, 56 duplicates or editions I'll skip.
@@ -116,7 +116,7 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   **PROPOSED — needs server change:** a documented size limit for one `POST /sql` body. Until then, if a 200-row
   request fails on size, halve it.
 - **The fast add, trimmed.** Import rows get facts and his own fields only: title, author, isbn, cover, status, rating,
-  tags, shelf (no dates). **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
+  tags, and the shelf (no dates). **No note**: `note` can be null; the `book_note` rules (40–90 words, plain prose) apply
   when you write one. No score until he has a ranking. Authors come with the books (below). See [BOOKS.md](BOOKS.md).
 - **Authors come with the books.** The database gives every author of every book an author row the moment the book
   is written, and never a second one: an author with twelve books has **one** row and one page, shared by all twelve.
@@ -133,25 +133,25 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   found, checked and talked about later.
   **PROPOSED — needs server change:** `books.import_batch` and `books.needs_review`, so batches and doubtful rows don't
   live in tags.
-- **Which shelf:** the home shelf. A new space has a home shelf called `books`; rename it in his words rather than
-  delete it. Set `shelf` explicitly on every row.
+- **Which shelf:** one shelf, in his words. A new space has no shelves; make it first. The books land in the Library
+  either way; the shelf rows go in the same request as each batch ([SHELVES.md](SHELVES.md)).
 
-Rename the home shelf (one request, before the first batch):
+Make the shelf (one request, before the first batch):
 
 ```sql
-update shelves set name = 'The house',
-       blurb = 'Every book I own, from Goodreads and from my shelves at home.',
-       sentence = 'Every book I own, from Goodreads and from my shelves at home.'
- where slug = 'books';
+insert into shelves (slug, name, blurb, sentence) values ('house', 'The house',
+       'Every book I own, from Goodreads and from my shelves at home.',
+       'Every book I own, from Goodreads and from my shelves at home.')
+on conflict (slug) do update set name = excluded.name, blurb = excluded.blurb, sentence = excluded.sentence;
 ```
 
 One batch. Skips anything already in the space, by ISBN or by title + first author, so re-running it is safe:
 
 ```sql
-insert into books (title, author, isbn, kindle_asin, status, rating, tags, shelf)
+insert into books (title, author, isbn, kindle_asin, status, rating, tags)
 select v.title, v.author, v.isbn,
        (select kindle_asin from book_facts f where f.isbn13 = v.isbn),
-       v.status, v.rating, v.tags, 'books'
+       v.status, v.rating, v.tags
   from (values
     ('The Lean Startup', 'Eric Ries', '9780307887894', 'want', 4::smallint,
      '{business,import:goodreads-2026-10-24}'::text[]),
@@ -164,6 +164,9 @@ select v.title, v.author, v.isbn,
        or (lower(b.title) = lower(v.title)
            and lower(split_part(b.author, ',', 1)) = lower(split_part(v.author, ',', 1))))
 returning slug, title;
+insert into shelf_books (shelf, book_id)
+select 'house', id from books where 'import:goodreads-2026-10-24' = any(tags)
+on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
 Cast the nulls (`null::text`, `null::smallint`) so the `values` list has types. `returning` lists what was
@@ -199,10 +202,10 @@ then one `update … from (values …)` request.
 
 ## 5. Shelves and topics, later
 
-Everything starts on the home shelf. That's fine for day one: the site ranks it and search finds any book. Once the
+Everything starts on one shelf. That's fine for day one: the site orders it and search finds any book. Once the
 import is in, look at his most-used Goodreads shelves (now `tags`) and offer two to five topic shelves from them, in his
-words ([START.md](START.md), [PAGES.md](PAGES.md) step 2). Moving books onto them is a bulk update: show the
-counts and wait for a yes.
+words ([START.md](START.md), [SHELVES.md](SHELVES.md)). Putting books on them is a bulk insert into `shelf_books`: show
+the counts and wait for a yes.
 
 ```sql
 select t as tag, count(*) from books, unnest(tags) t where t not like 'import:%' group by 1 order by 2 desc limit 20;
@@ -235,7 +238,7 @@ If he sends a wide photo anyway, don't refuse it. Read what you can, and say pla
 One read for the whole photo: his books (from the export) and the shared facts.
 
 ```sql
-select slug, title, author, shelf, niche, isbn from books
+select slug, title, author, isbn from books
  where lower(title) in ('high output management', 'the lean startup', 'zero to one');
 select isbn13, title, authors, cover_url from book_facts
  where lower(title) in ('high output management', 'the lean startup', 'zero to one');
@@ -257,9 +260,9 @@ Thing About Hard Things".
 ### Write it: one request per photo
 
 ```sql
-insert into books (title, author, isbn, status, shelf, tags)
+insert into books (title, author, isbn, status, tags)
 select v.title, v.author, v.isbn,
-       'want', 'books', '{import:photo-2026-10-24-1}'::text[]
+       'want', '{import:photo-2026-10-24-1}'::text[]
   from (values ('Zero to One', 'Peter Thiel', null::text),
                ('High Output Management', 'Andrew S. Grove', null::text)) as v(title, author, isbn)
  where not exists (
@@ -302,6 +305,6 @@ The import gives him the library. The rest comes slowly, best first, and never a
 Runs do this in small batches from Later ([DAILY.md](DAILY.md), *A run*).
 
 End the import session with the next step: *"Next: pick how you rank books, and I'll score your rated ones first."*
-Imported books have no rank, so the home page has no real order until then; his ratings are the first signal.
+Imported books have no book score, so the Library has no real order until then; his ratings are the first signal.
 
-**PROPOSED — needs server change:** check site speed at 2,000+ books: the home page, a shelf, search.
+**PROPOSED — needs server change:** check site speed at 2,000+ books: the Library, a shelf, search.

@@ -44,7 +44,8 @@ On a scheduled run nobody is watching: never ask the page question, never write 
   how they judge the next book.
 - "X should rank higher" → about one book: change its scores. About how they judge: change the ranking (RANKING.md)
   and say what moved.
-- "Not that shelf" → move it, and ask once whether the shelf needs a new niche.
+- "Not that shelf" → take it off that shelf and put it on the right one ([SHELVES.md](SHELVES.md)); ask once whether
+  the shelf needs a new subshelf.
 - Their goal changes → rewrite the `book_note` note (START.md, merge), then offer to re-note the top books.
 
 ## A large library
@@ -59,7 +60,7 @@ changed. Never change shelves, statuses, ratings or their own words on an unatte
 
 ## Keep it alive
 
-The home page shows "Last updated by your AI" and warns after a week of silence. One small, real write a week (a
+The Library (home page) shows "Last updated by your AI" and warns after a week of silence. One small, real write a week (a
 news why, a sharper note, a new book) is better than a big rewrite once a month.
 
 ## Exact SQL
