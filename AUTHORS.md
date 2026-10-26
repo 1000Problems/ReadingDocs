@@ -24,9 +24,10 @@ what to say about them in the reader's conversations.
 - `hook`: one line to remember them by.
 
 ## The page
-Author pages are never owed by themselves: one exists in Later only because the reader said yes. A yes for later, or
-for many ("pages for every author I own 2+ books by"), is one row each, then one line (*"12 author pages are in
-Later."*):
+Author pages are owed by themselves only once the reader has an author page format (`templates`, kind `author_page`):
+then every author with 2+ of their books and no page is in Later (derived). Before that, one exists in Later only
+because the reader said yes. A yes for later, or for many ("pages for every author I own 2+ books by"), is one row
+each, then one line (*"12 author pages are in Later."*):
 ```
 insert into owed (kind, subject)
 select 'author_page', 'author:' || author_slug from book_authors

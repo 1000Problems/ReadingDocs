@@ -33,8 +33,9 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
 7. **Score it, in the same request (required).** Adding = scoring. `rank_detail = '{"scores": {…}}'` with a 1–10
    score for every factor of their ranking: that sets its **Library** score. On each other shelf it's on, a score
    1–100 against that shelf's rule, with one line in `score_why` and an `angle` (how to read it on this shelf), on
-   the All row ([RANKING.md](RANKING.md), *Ranking a shelf*). A book or membership still unscored when the request
-   ends fails the whole request ("score it on arrival"); nothing is kept.
+   the All row ([RANKING.md](RANKING.md), *Ranking a shelf*). A book or membership you leave without a score lands
+   as the **placeholder** 50 (`score_by = 'default'`), owed in Later as `rank`: that's for imports, not a shortcut.
+   The top of a shelf shows real scores only, so a single add you didn't score is missing from it until ranked.
 
 Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `why_read` (the reader's own reason only,
 never yours); on `shelf_books`: `angle`, `overlap` (which book on the shelf covers the same ground).

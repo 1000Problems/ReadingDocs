@@ -132,28 +132,34 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 A book's **progress** is `status`: `want` (up next), `reading`, `finished`. **Set aside** is a separate switch
 (`set_aside`), at any progress: the reader doesn't want it now. The site shows states as a filter (*Show*) and on each
 cover, never as subshelves; the three books on top of a shelf are the top 3 by score of what is shown. Every book on a
-shelf is ranked: a placeholder 50 (`score_by = 'default'`) is owed as `rank` until you score it. Details:
+shelf is ranked: no score means the placeholder 50 (`score_by = 'default'`), owed as `rank` until you score it, and
+left out of the top 3. Details:
 [BOOKS.md](BOOKS.md), [SHELVES.md](SHELVES.md), [RANKING.md](RANKING.md).
 
 ## Later (owed work)
 
 Some work doesn't need to happen while the reader waits: a book's page, an author's news, a subshelf's story, a missing
-ISBN. That work goes in **Later**, one stored list (`owed`). The reader sees it on the site at `/later`, steers it
-(*Write it next*, *Not now*, *Never*, *Try again*), and any session pays from it, best first.
+ISBN, a rank. That work is **Later** (`owed_next`, best first). The reader sees it on the site at `/later`, steers it
+(*Write it next*, *Not now*, *Never*, *Try again*), and any session pays from it.
+
+**Derived and stored.** `rank`, `page`, `author_page`, `isbn` and `cover` are **derived**: worked out from what's
+missing (a placeholder score, sections a page still owes, an empty column), so they show in `owed_next` with `id`
+null until something touches them. Everything else, and any derived row once claimed, boosted, snoozed, skipped or
+failed, is a **stored** row in `owed`. `detail`: the shelf for `rank`, the template version for `page` and `rescore`.
 
 **The database adds almost everything by itself**, the moment it becomes due, and **closes it by itself** when your
 write does the work (in the same change, so undo reopens it):
 
 | Owed | When | Closed by |
 |---|---|---|
-| `page` | a book is `reading` or rated 4–5, the reader has page rules, and its page lacks sections; their rules gain a section | writing its sections (`book_sections`) until none is missing |
+| `page` (derived) | the reader has page rules and a book's page still owes sections (missing, or not fitting their look). A change to the rules is "all books": pages that now miss a section are owed again; a change to one page isn't | writing its sections (`book_sections`) |
 | `news_check` | an author page is written; again 30 days after each check | `update authors set news_checked_at = now()` |
 | `news_why` | `author_news` saved without a why | writing the why |
 | `story` | a subshelf reaches 3 books with no story | writing `shelf_stories` |
 | `rescore` | the ranking's factors change (`apply_existing`) | scoring that book again (a weights-only change re-ranks everything at once; nothing owed) |
-| `rank` | a shelf score is a placeholder (`score_by = 'default'`; subject `book:<slug>`, detail = the shelf). First in line | scoring the book on that shelf |
-| `isbn`, `cover` | a book arrives without one (cover: and `book_facts` has none) | writing the column |
-| `author_page` | **never by itself**: only when the reader says yes | writing its sections (`author_sections`) |
+| `rank` (derived) | a shelf score is a placeholder (`score_by = 'default'`) on a shelf with a ranking rule. First in line | scoring the book on that shelf |
+| `isbn`, `cover` (derived) | a book has none (cover: and `book_facts` has none either) | writing the column |
+| `author_page` (derived) | the reader has an author page format and an author with 2+ of their books has no page; before that, only when the reader says yes | writing its sections (`author_sections`) |
 
 Rows for a **set-aside** book (`books.set_aside`) are hidden from `owed_next` until it's back.
 
@@ -161,14 +167,16 @@ So you **never** insert what that table already owes, and **never** `update owed
 
 You write to Later only in these moments:
 
-1. **The reader says "later" to something nothing else owes**: author pages ("do pages for every author I own 2+ books
-   by" → one row each), or the page of a book they aren't reading and didn't rate 4–5:
+1. **The reader says "later" to something nothing else owes**: author pages before they have an author format ("do
+   pages for every author I own 2+ books by" → one row each):
    `insert into owed (kind, subject) values ('author_page', 'author:eric-ries') on conflict do nothing;`
 2. **A big live request**: in a session with the reader, do up to 5 writes, then put the rest in Later, unless they
    said "all of them now".
 3. **You can't do one** (nothing found, a source down): `select owed_fail(<id>, 'one line why')`. It comes back in 30
    days; the third time the reader sees your note with *Try again*.
-4. **A run** ([DAILY.md](DAILY.md), *A run*): `owed_claim`, pay, fail with a note, a two-line summary in `runs`.
+4. **A run** ([DAILY.md](DAILY.md), *A run*): `owed_claim` (it stores the derived rows it hands you), pay, fail with
+   a note, a two-line summary in `runs`. To act on a derived row outside a run: `select owed_touch(kind, subject, detail)`
+   returns its id.
 
 Each insert ends your reply with one line: *"I've put Eric Ries's page in Later."*
 

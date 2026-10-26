@@ -71,9 +71,12 @@ a shelf (or the site's *Rank this shelf*):
 "Rank the new ones" is the same for books with a **placeholder** score only (`score_by = 'default'`), placed among the
 existing scores without moving them.
 
-**Every book on a shelf has a score.** You score on arrival (BOOKS.md); a score never goes back to null. Books that had
-none before 10-26 got a placeholder 50 with `score_by = 'default'`; each is owed in Later as `rank` (first in line).
-Your real score (or the reader's drag) replaces it and closes the row.
+**Every book on a shelf has a score. No score means 50.** Leave `score` out (an import), or set it to null ("unrank
+this"), and the database writes the **placeholder**: 50, `score_by = 'default'`, `score_why = 'Placeholder: not ranked
+yet.'`. You never write `'default'` yourself. A placeholder is owed in Later as `rank` (first in line) on any shelf with
+a ranking rule; your real score, or the reader's drag, replaces it. Writing 50 with a reason is a real score.
+- The top 3 of a shelf on the site are real scores only; placeholders show in the grid with "Needs rank".
+- Equal scores sort newest added first, then by title, everywhere.
 
 ## Exact SQL
 What's on offer and what's active:
@@ -93,6 +96,14 @@ insert into templates (kind, rules, apply_existing) values ('ranking', '{
   "note": "Zero to One = 9 on mentor: every founder conversation. The Lean Startup = 9 on readers: assigned in every program."
 }', true)
 on conflict (kind) do update set rules = excluded.rules, apply_existing = excluded.apply_existing;
+```
+Pay a `rank` row, and unrank one (back to the placeholder):
+```sql
+update shelf_books set score = 72, score_why = 'Assigned in every program he''s been through.'
+ where shelf = 'library' and subshelf = '' and book_id = (select id from books where slug = 'zero-to-one');
+update shelf_books set score = null
+ where shelf = 'library' and subshelf = '' and book_id = (select id from books where slug = 'zero-to-one');
+select kind, subject, detail, say from owed_next where kind = 'rank' order by priority limit 5;
 ```
 Score books (one change for the lot):
 ```sql

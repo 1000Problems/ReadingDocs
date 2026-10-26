@@ -8,8 +8,9 @@ score per book, and its own subshelves. It is the home page. It can be renamed, 
 `library`. **Other shelves** are the reader's own areas ("Founder", "Spanish kitchen"); a book can be on many.
 
 **Every shelf is always in score order**, and **adding = scoring**: a book lands on a shelf with its score, in the same
-request. A membership still unscored when the request ends fails the whole request ("score it on arrival"). Only you
-(the AI) add books and put them on shelves; the site can't.
+request. A membership left without a score gets the placeholder 50 (`score_by = 'default'`), owed as `rank`; imports
+do this on purpose ([IMPORT.md](IMPORT.md)). The three books on top of a shelf are its top 3 **real** scores of what is
+shown; equal scores: newest added first, then title. Only you (the AI) add books and put them on shelves; the site can't.
 
 | View | One row per | What |
 |---|---|---|

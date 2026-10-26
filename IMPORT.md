@@ -135,10 +135,16 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   live in tags.
 - **Which shelf:** one shelf, in his words. A new space has only the Library; make the shelf first. The books land
   in the Library either way; the shelf rows go in the same request as each batch ([SHELVES.md](SHELVES.md)).
-- **Scored on arrival.** Every book and shelf row must have its score when the batch's request ends, or the whole
-  batch fails. An import can't rank 200 books properly in one request, so it writes a **provisional score** from his
-  rating (5★ 90 · 4★ 75 · 3★ 55 · 2★ 35 · 1★ 15 · none 50) with `score_why` saying so. Ranking them properly is the
-  next step (*Rank this shelf*, [RANKING.md](RANKING.md)); never leave the provisional ones as the final word.
+- **The import writes books only.** Books, their shelf rows, nothing else: **no scores** (every book lands on the
+  Library and its shelf as the placeholder 50, `score_by = 'default'`), no pages, no inserts into Later. The work
+  appears in Later by itself: `rank` for every placeholder on a shelf with a ranking rule (the Library always has one),
+  first in line; `page` for every book once he has page rules; `isbn`/`cover` where missing. Runs pay it: a scheduled
+  run claims up to 500 (`owed_claim(500, 'scheduled')`), so **ranks drain in a handful of runs; pages take weeks**.
+  Tell him that in the plan.
+- **Batches by shelf, or 250 rows**, one request each. Undo works per batch, and only until a run scores those books,
+  so "undo the import" is really "undo the last batch". When it's done, one line in `runs`:
+  *"Added 2,014 books on 6 shelves in 9 batches with default ranking."* (Exact SQL below). A subshelf reaching 3
+  books may add a `story` to Later; that's real work, leave it.
 
 Make the shelf (one request, before the first batch):
 
@@ -168,15 +174,9 @@ select v.title, v.author, v.isbn,
        or (lower(b.title) = lower(v.title)
            and lower(split_part(b.author, ',', 1)) = lower(split_part(v.author, ',', 1))))
 returning slug, title;
--- Provisional scores from his rating (the batch fails without them).
-update shelf_books sb set score = case b.rating when 5 then 90 when 4 then 75 when 3 then 55 when 2 then 35 when 1 then 15 else 50 end,
-       score_why = 'Provisional, from your Goodreads rating; ranked properly next.'
-  from books b where b.id = sb.book_id and sb.shelf = 'library' and sb.subshelf = '' and sb.score is null
-   and 'import:goodreads-2026-10-24' = any(b.tags);
-insert into shelf_books (shelf, book_id, score, score_why)
-select 'house', id, case rating when 5 then 90 when 4 then 75 when 3 then 55 when 2 then 35 when 1 then 15 else 50 end,
-       'Provisional, from your Goodreads rating; ranked properly next.'
-  from books where 'import:goodreads-2026-10-24' = any(tags)
+-- No scores: each membership lands as the placeholder 50, owed as rank (his rating stays on the book for the ranking).
+insert into shelf_books (shelf, book_id)
+select 'house', id from books where 'import:goodreads-2026-10-24' = any(tags)
 on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
@@ -189,6 +189,13 @@ Check the first batch with him before the rest:
 select slug, title, author, isbn, status, rating, tags
   from books where 'import:goodreads-2026-10-24' = any(tags) order by created_at limit 25;
 select count(*) from books where 'import:goodreads-2026-10-24' = any(tags);
+```
+
+When every batch is in, the one summary line:
+
+```sql
+insert into runs (source, finished_at, summary)
+values ('live', now(), 'Added 2 books on 1 shelf in 1 batch with default ranking.');
 ```
 
 Look for:

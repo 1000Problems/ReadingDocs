@@ -23,12 +23,14 @@ changed on the site*).
 The reader pastes the site's **Run now** opener ("Do the next 20 things in my Reading's Later list …"), says "do
 what's waiting", or a scheduled task fires. Same recipe each time:
 
-1. `select * from owed_claim(20, 'live')` (a scheduled task: `'scheduled'`). You get up to 20 rows, best first, each
-   with `say` (exactly what to write) and your `run_id`. They're held for you for 2 hours; nobody else takes them.
+1. `select * from owed_claim(20, 'live')` (a scheduled task: `'scheduled'`, up to 500). You get the rows best first,
+   each with its `id`, `say` (exactly what to write) and your `run_id`. They're held for you for 2 hours; nobody else
+   takes them. `rank` rows come first: one write each, so score 25–50 books per request.
 2. Do each row as `say` says, in the reader's rules ([PAGES.md](PAGES.md), [AUTHORS.md](AUTHORS.md),
    [PLAYBOOK.md](PLAYBOOK.md)). The write closes the row; nothing else to mark.
-3. Can't do one: `select owed_fail(<id>, '<one line why>')`, and go on.
-4. Stop at 20 writes (one section, one why, one check, one ISBN = one write). A page you didn't finish stays in Later
+3. Can't do one: `select owed_fail(<id>, '<one line why>')`, and go on. A row you saw in `owed_next` without an id
+   (derived) fails by its key: `select owed_fail('<kind>', '<subject>', <detail or null>, '<why>')`.
+4. Stop at the run's limit, 20 writes live (one section, one why, one check, one ISBN, one rank = one write). A page you didn't finish stays in Later
    with its remaining sections.
 5. End: `update runs set finished_at = now(), summary = '<what you did>. <how many left; next title>' where id = <run_id>`,
    and say the same two lines to the reader.
@@ -78,6 +80,13 @@ insert into owed (kind, subject) values ('author_page', 'author:andrew-s-grove')
 select kind, title, state, added_by from owed where subject = 'author:andrew-s-grove';
 ```
 
+What's waiting, and the id of a derived row (to boost or fail it outside a run):
+
+```sql
+select priority, id, kind, subject, detail, title from owed_next order by priority limit 20;
+select owed_touch('isbn', 'book:high-output-management');
+```
+
 A run: claim, do one, fail one, finish (each block is one request):
 
 ```sql
@@ -89,8 +98,7 @@ update books set isbn = '9780679762881' where slug = 'high-output-management';
 ```
 
 ```sql
-select owed_fail((select id from owed where kind = 'cover' and subject = 'book:high-output-management' and state = 'open'),
-                 'no free cover found (Open Library has none for this ISBN)');
+select owed_fail('cover', 'book:high-output-management', null, 'no free cover found (Open Library has none for this ISBN)');
 ```
 
 ```sql

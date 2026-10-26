@@ -9,9 +9,16 @@ reader is Maya, who advises early-stage AI founders.
 ## When pages are built
 
 - **The reader asks:** "write up The Lean Startup", "tell me about Eric Ries".
-- **Later has it:** a book being read or rated 4–5 is owed its page once the reader has page rules, and runs build
-  those ([DAILY.md](DAILY.md), *A run*). "Write up X" in a session means now, whatever Later says; the page closes its
-  Later row by itself.
+- **Later has it:** once the reader has page rules, every book whose page still owes sections is in Later (`page`,
+  derived), and runs build them, books being read first ([DAILY.md](DAILY.md), *A run*). "Write up X" in a session
+  means now, whatever Later says; writing the sections clears it by itself.
+- **All books vs this book.** A change to the page rules (`templates`, kind `book_description`) is for **all books**:
+  its version goes up and every page that now misses a section, or has one that doesn't fit its new look, is owed
+  again. A change to one page only ("… on "Book" only", a `style` on `book_sections`) never re-owes anything.
+- **The exemplar.** When the reader says "make them all like this one", change the rules if the shape changed, and set
+  the page whose voice the others should match:
+  `update templates set exemplar_slug = 'the-lean-startup' where kind = 'book_description'`. Every `page` row's `say`
+  then ends *match the page for "The Lean Startup"*.
 - **The first session:** one page, for the first book, right after the page question ([START.md](START.md)).
 
 ## When the reader comes from the site
@@ -647,4 +654,13 @@ select headline, mine, shared from news where author = 'eric-ries';
 -- the author links: one row per author of the book, every has_row = true, or an author page won't link
 select author_slug, has_row from book_authors where book_slug = 'the-lean-startup';
 select count(*) as cards from cards c join books b on b.id = c.book_id where b.slug = 'the-lean-startup';
+```
+
+## Exact SQL
+What a book page still owes, and making one page the exemplar (all books) — the template must exist first:
+```sql
+insert into templates (kind, rules) values ('book_description', '{"sections": [{"id": "pitch"}, {"id": "core_ideas"}]}')
+on conflict (kind) do update set rules = excluded.rules;
+select subject, detail, say from owed_next where kind = 'page' order by priority limit 5;
+update templates set exemplar_slug = 'the-lean-startup' where kind = 'book_description';
 ```
