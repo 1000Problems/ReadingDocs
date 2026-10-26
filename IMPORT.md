@@ -18,7 +18,7 @@ The example reader is Sam, who owns about 2,000 books and has kept a Goodreads a
 - **It keeps getting better.** Over the following weeks, scheduled runs fill in covers, notes and author pages for the
   books he rates highest, and an author page for every author, the ones he owns most first ([DAILY.md](DAILY.md)).
 
-Books show in book-score order, as for every reader. Where a book sits in his house is not recorded. Later, ask the reader
+Books show in score order on every shelf, the Library included, as for every reader. Where a book sits in his house is not recorded. Later, ask the reader
 whether physical position matters to them; if so, that needs a server change.
 
 ## Many books at once (10–200)
@@ -133,8 +133,12 @@ Each request is one transaction: all of it is written, or none. Each is one chan
   found, checked and talked about later.
   **PROPOSED — needs server change:** `books.import_batch` and `books.needs_review`, so batches and doubtful rows don't
   live in tags.
-- **Which shelf:** one shelf, in his words. A new space has no shelves; make it first. The books land in the Library
-  either way; the shelf rows go in the same request as each batch ([SHELVES.md](SHELVES.md)).
+- **Which shelf:** one shelf, in his words. A new space has only the Library; make the shelf first. The books land
+  in the Library either way; the shelf rows go in the same request as each batch ([SHELVES.md](SHELVES.md)).
+- **Scored on arrival.** Every book and shelf row must have its score when the batch's request ends, or the whole
+  batch fails. An import can't rank 200 books properly in one request, so it writes a **provisional score** from his
+  rating (5★ 90 · 4★ 75 · 3★ 55 · 2★ 35 · 1★ 15 · none 50) with `score_why` saying so. Ranking them properly is the
+  next step (*Rank this shelf*, [RANKING.md](RANKING.md)); never leave the provisional ones as the final word.
 
 Make the shelf (one request, before the first batch):
 
@@ -164,8 +168,15 @@ select v.title, v.author, v.isbn,
        or (lower(b.title) = lower(v.title)
            and lower(split_part(b.author, ',', 1)) = lower(split_part(v.author, ',', 1))))
 returning slug, title;
-insert into shelf_books (shelf, book_id)
-select 'house', id from books where 'import:goodreads-2026-10-24' = any(tags)
+-- Provisional scores from his rating (the batch fails without them).
+update shelf_books sb set score = case b.rating when 5 then 90 when 4 then 75 when 3 then 55 when 2 then 35 when 1 then 15 else 50 end,
+       score_why = 'Provisional, from your Goodreads rating; ranked properly next.'
+  from books b where b.id = sb.book_id and sb.shelf = 'library' and sb.subshelf = '' and sb.score is null
+   and 'import:goodreads-2026-10-24' = any(b.tags);
+insert into shelf_books (shelf, book_id, score, score_why)
+select 'house', id, case rating when 5 then 90 when 4 then 75 when 3 then 55 when 2 then 35 when 1 then 15 else 50 end,
+       'Provisional, from your Goodreads rating; ranked properly next.'
+  from books where 'import:goodreads-2026-10-24' = any(tags)
 on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
@@ -304,7 +315,7 @@ The import gives him the library. The rest comes slowly, best first, and never a
 
 Runs do this in small batches from Later ([DAILY.md](DAILY.md), *A run*).
 
-End the import session with the next step: *"Next: pick how you rank books, and I'll score your rated ones first."*
-Imported books have no book score, so the Library has no real order until then; his ratings are the first signal.
+End the import session with the next step: *"Next: pick how you rank books, and I'll rank the Library properly."*
+Imported books carry provisional scores from his ratings until then; say so, and rank them (RANKING.md).
 
 **PROPOSED — needs server change:** check site speed at 2,000+ books: the Library, a shelf, search.

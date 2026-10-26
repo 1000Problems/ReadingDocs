@@ -374,19 +374,24 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 
 Then, on `shelf_books` (the All row of each shelf it's on): `angle`, one or two sentences on how this book shows up in
 *this reader's* life on this shelf, and `overlap`, which other book here covers the same ground and whether one is
-enough. Place it on a subshelf with a second row; its All row is already there.
+enough. Place it on a subshelf with a second row; its All row is already there. **Score it in this same request**
+(step 4): its `rank_detail` (the Library score) and its score on each shelf. An unscored book or membership fails the
+whole request.
 
 ```sql
-insert into books (title, author, isbn, kindle_asin, status, tags, note)
+insert into books (title, author, isbn, kindle_asin, status, tags, note, rank_detail)
 values ('The Lean Startup', 'Eric Ries', '9780307887894', 'B004J4XGN6',
         'want', '{startups,validation}',
-        '…40–90 words: why this book, for this reader…')
+        '…40–90 words: why this book, for this reader…',
+        '{"scores": {"talk": 9, "readers": 9, "current": 5, "canon": 9, "mentor": 8}}')
 returning id, slug;
-insert into shelf_books (shelf, book_id, angle, overlap)
-values ('founder', (select id from books where slug = 'the-lean-startup'),
+insert into shelf_books (shelf, book_id, score, score_why, angle, overlap)
+values ('founder', (select id from books where slug = 'the-lean-startup'), 85,
+        '…the strongest evidence against the rule, one line…',
         '…how MVP and validated learning come up when an AI founder pitches you…',
         'Heavy overlap with The Startup Owner''s Manual (Steve Blank, Bob Dorf): either covers customer development.')
-on conflict (shelf, subshelf, book_id) do update set angle = excluded.angle, overlap = excluded.overlap;
+on conflict (shelf, subshelf, book_id) do update set score = excluded.score, score_why = excluded.score_why,
+  angle = excluded.angle, overlap = excluded.overlap;
 insert into shelf_books (shelf, subshelf, book_id)
 values ('founder', 'idea', (select id from books where slug = 'the-lean-startup'))
 on conflict (shelf, subshelf, book_id) do nothing;
@@ -398,8 +403,9 @@ on conflict (shelf, subshelf, book_id) do nothing;
 select rules from rules where kind = 'ranking';
 ```
 
-Score **exactly** the active factors, 1–10 each; `book_score` is computed. Then its score on each shelf (1–100,
-against the shelf's rule, one line in `score_why`; [RANKING.md](RANKING.md), *Ranking a shelf*). Books under
+Score **exactly** the active factors, 1–10 each; they set the book's **Library** score. Then its score on each
+shelf (1–100, against the shelf's rule, one line in `score_why`; [RANKING.md](RANKING.md), *Ranking a shelf*). Both
+go in the request that adds the book (step 3). To re-score later: Books under
 five years old score at most 5 on `endurance`. If the reader has no ranking yet the default (Importance) applies;
 see [RANKING.md](RANKING.md) to set theirs.
 
@@ -408,7 +414,8 @@ update books set rank_detail = '{"scores": {"talk": 9, "readers": 9, "current": 
  where slug = 'the-lean-startup';
 update shelf_books set score = 85, score_why = '…the strongest evidence against the rule, one line…'
  where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'the-lean-startup');
-select slug, book_score from books where slug = 'the-lean-startup';
+select sb.shelf, sb.score from shelf_books sb join books b on b.id = sb.book_id
+ where b.slug = 'the-lean-startup' and sb.subshelf = '';
 ```
 
 (Scores shown are for an "Ask"-style template; use the reader's factors.)
@@ -632,7 +639,7 @@ Later."*).
 ## Check the pages
 
 ```sql
-select slug, book_score, isbn, kindle_asin, (note is not null) as has_note from books where slug = 'the-lean-startup';
+select slug, isbn, kindle_asin, (note is not null) as has_note from books where slug = 'the-lean-startup';
 select shelf, subshelf, score, score_by from shelf_books where book_id = (select id from books where slug = 'the-lean-startup');
 select count(*) as summaries from notes n join books b on b.id = n.book_id where b.slug = 'the-lean-startup' and n.kind = 'summary';
 select slug, (summary is not null) as has_page, news_checked_at from authors where slug = 'eric-ries';

@@ -17,7 +17,8 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
    *Covers and author photos*.
 3. **Shelves.** `select slug, name, ranking_rule from shelves`. Put it on the shelf(s) it belongs to, and on a
    subshelf if one fits (`select shelf, slug, name from subshelves`): one `shelf_books` row each ([SHELVES.md](SHELVES.md)).
-   No shelves yet → make the first one with the reader (START.md); a book on no shelf is still in the Library.
+   Every book is on the Library already (the database puts it there). No other shelves yet → make the first one with
+   the reader (START.md).
 4. **Author.** Full name(s), first author first, co-authors separated by commas. The database gives each author one
    row (and page) the moment the book is written, matched by slug, so **spell an author the same way on every book**:
    "Andrew Grove" and "Andrew S. Grove" are two people to it. Check first: `select slug, name from authors where name ilike '%grove%'`.
@@ -26,10 +27,11 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
    memory of them; if you have none, write to their goal. Never invent a detail to sound personal. Rules: `select rules from rules where kind = 'book_note'` (default 40–90 words, plain prose, no invented
    quotes or facts).
 6. **Status:** `want` (default), `reading`, `finished`, `abandoned`. Dates fill themselves.
-7. **Score it** (optional now, expected soon): `rank_detail = '{"scores": {…}}'` with a 1–10 score for every factor
-   of their ranking. `book_score` is computed; you can't set it. On each shelf it's on, a score 1–100 against that
-   shelf's rule, with one line in `score_why` and an `angle` (how to read it on this shelf) on the All row
-   ([RANKING.md](RANKING.md), *Ranking a shelf*).
+7. **Score it, in the same request (required).** Adding = scoring. `rank_detail = '{"scores": {…}}'` with a 1–10
+   score for every factor of their ranking: that sets its **Library** score. On each other shelf it's on, a score
+   1–100 against that shelf's rule, with one line in `score_why` and an `angle` (how to read it on this shelf), on
+   the All row ([RANKING.md](RANKING.md), *Ranking a shelf*). A book or membership still unscored when the request
+   ends fails the whole request ("score it on arrival"); nothing is kept.
 
 Other columns the site shows: `tags` (text[]), `kindle_asin`, `cover_url`, `why_read` (the reader's own reason only,
 never yours); on `shelf_books`: `angle`, `overlap` (which book on the shelf covers the same ground).
@@ -55,21 +57,25 @@ Any other book: say nothing about pages. "Write it up" means now ([PAGES.md](PAG
 
 ## Exact SQL
 
+One request: the book with its factor scores (its Library score), then its shelf with that shelf's score, then the
+subshelf.
+
 ```sql
-insert into books (title, author, status, note) values
+insert into books (title, author, status, note, rank_detail) values
   ('High Output Management', 'Andrew S. Grove', 'want',
-   'Grove wrote the manual for running a team when he ran Intel. Founders hiring their first managers quote his one-on-one and output chapters; read them so you can tell which advice still fits a ten-person AI company and where to push back.');
+   'Grove wrote the manual for running a team when he ran Intel. Founders hiring their first managers quote his one-on-one and output chapters; read them so you can tell which advice still fits a ten-person AI company and where to push back.',
+   '{"scores": {"mentor": 9, "talk": 8, "endurance": 9}}');
+insert into shelf_books (shelf, book_id, score, score_why, angle)
+values ('founder', (select id from books where slug = 'high-output-management'), 88,
+        'The management book founders name first when they hire managers.',
+        'Read the one-on-one chapters before your first manager hire.')
+on conflict (shelf, subshelf, book_id) do update set score = excluded.score, score_why = excluded.score_why, angle = excluded.angle;
 insert into shelf_books (shelf, subshelf, book_id)
 values ('founder', 'people', (select id from books where slug = 'high-output-management'))
 on conflict (shelf, subshelf, book_id) do nothing;
 ```
 
 ```sql
-update books set rank_detail = '{"scores": {"mentor": 9, "talk": 8, "endurance": 9}}'
- where slug = 'high-output-management';
-update shelf_books set score = 88, score_why = 'The management book founders name first when they hire managers.',
-       angle = 'Read the one-on-one chapters before your first manager hire.'
- where shelf = 'founder' and subshelf = '' and book_id = (select id from books where slug = 'high-output-management');
-select b.slug, b.book_score, sb.score, sb.score_why from books b
+select b.slug, sb.shelf, sb.score, sb.score_why from books b
   join shelf_books sb on sb.book_id = b.id and sb.subshelf = '' where b.slug = 'high-output-management';
 ```

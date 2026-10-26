@@ -2,41 +2,50 @@
 
 Note: niches are now subshelves.
 
-**The Library** is every book in the space; it is the home page, ordered by `book_score` (shelf-blind, from
-`rank_detail`; [RANKING.md](RANKING.md)). **Shelves** are the reader's own areas ("Founder", "Spanish kitchen"). There
-are no built-in shelves: a new space has none until you make them with the reader. A book can be on many shelves.
+**The Library is a shelf** (slug `library`). Every space has it; every book is on it (the database puts each new book
+there); it has its own `ranking_rule` ("How much this book matters to me overall." until the reader changes it), its own
+score per book, and its own subshelves. It is the home page. It can be renamed, never deleted, and its slug stays
+`library`. **Other shelves** are the reader's own areas ("Founder", "Spanish kitchen"); a book can be on many.
+
+**Every shelf is always in score order**, and **adding = scoring**: a book lands on a shelf with its score, in the same
+request. A membership still unscored when the request ends fails the whole request ("score it on arrival"). Only you
+(the AI) add books and put them on shelves; the site can't.
 
 | View | One row per | What |
 |---|---|---|
-| `shelves` | shelf | `slug`, `name`, `position`, `blurb` (the line the site shows), `sentence` (the same line for other AIs), `ranking_rule` (one sentence: what matters on this shelf; required before ranking), `ranked_at` (set it when you finish ranking) |
-| `subshelves` | group inside a shelf | `shelf`, `slug`, `name`, `sentence`, `position`. Two levels only. Placement only: no scores |
+| `shelves` | shelf | `slug`, `name`, `position` (the Library is -1, first), `blurb` (the line the site shows), `sentence` (the same line for other AIs), `ranking_rule` (one sentence: what matters on this shelf), `ranked_at` (set it when you finish ranking) |
+| `subshelves` | group inside a shelf | `shelf`, `slug`, `name`, `sentence`, `position`. One level, on any shelf including the Library. Placement only: no scores |
 | `shelf_books` | (shelf, subshelf, book) | `subshelf = ''` is the shelf membership (**All**): it holds `score` 1–100, `score_why`, `score_by` (`ai` or `you`, set by the database), `angle` (how to read it on this shelf), `overlap` (which book here covers the same ground). A row with a subshelf places the book there |
 | `shelf_stories` | shelf or subshelf | the playbook story (`subshelf = ''` = the whole shelf); [PLAYBOOK.md](PLAYBOOK.md) |
 | `shelf_roles` | author on a shelf or subshelf | one line on why they matter there |
 
 ## The rules
 
-- **All is the shelf.** Putting a book on a subshelf adds its All row for you. Deleting the All row takes the book off
-  the shelf, and its subshelf rows go with it. Upsert key: `on conflict (shelf, subshelf, book_id)`.
+- **All is the shelf.** Putting a book on a subshelf adds its All row for you (score that row in the same request).
+  Deleting the All row takes the book off the shelf, and its subshelf rows go with it. The Library's All row can't be
+  deleted: delete the book instead. Upsert key: `on conflict (shelf, subshelf, book_id)`.
 - **One score per shelf**, on the All row, against that shelf's `ranking_rule` ([RANKING.md](RANKING.md), *Ranking a
   shelf*). A score on a subshelf row is refused: "scores live on the shelf". `score_by = 'you'` means the reader set it
   (drag on the site); never change one without saying so.
-- **Subshelves are placement.** Make them when the reader agrees (the site can make one too, even empty). A subshelf reaching 3 books with no
-  story puts a `story` in Later (subject `subshelf:<shelf>/<subshelf>`; todo key `story:<shelf>:<subshelf>`).
-- **Automatic subshelves** are filters the site shows on every shelf, never rows. Their slugs are reserved: `all`,
-  `reading`, `finished`, `unranked`, `unplaced`, `recent`, `abandoned` (and a shelf can't be called `library` either).
-  There is no "Want" filter.
-- Hints: `propose_shelves` (10+ books, at most one shelf), `propose_subshelves` (10+ books on a shelf, no subshelves),
-  `set_ranking_rule` (5+ books on a shelf, no rule). Offer them as `hints` says.
+- **The Library score** comes from the book's `rank_detail` (the reader's ranking factors, [RANKING.md](RANKING.md)),
+  or you write it like any other shelf score. A score the reader set is kept when `rank_detail` changes.
+- **Subshelves are placement.** Make them when the reader agrees. A subshelf reaching 3 books with no story puts a
+  `story` in Later (subject `subshelf:<shelf>/<subshelf>`; todo key `story:<shelf>:<subshelf>`).
+- **Automatic subshelves** are filters the site shows on every shelf, never rows. Reserved slugs: `all`, `reading`,
+  `finished`, `unranked`, `unplaced`, `recent`, `abandoned`, `library`. The site hides one when it would show the same
+  books as All (Reading now always shows).
+- Hints: `propose_shelves` (10+ books, at most one shelf besides the Library), `propose_subshelves` (10+ books on a
+  shelf, no subshelves), `set_ranking_rule` (5+ books, no rule), `rank_unranked` (books on a shelf with no score: score
+  them). Offer them as `hints` says.
 
-| Automatic | On a shelf | On the Library |
-|---|---|---|
-| Reading now | `status = 'reading'`, `started_at` desc | the same |
-| Finished | `status = 'finished'`, `finished_at` desc | the same |
-| Unranked | All-row `score` is null | unranked on some shelf |
-| Unplaced | — | on no shelf |
-| Recent | added to this shelf in the last 60 days | created in the last 60 days |
-| Abandoned | `status = 'abandoned'` | the same |
+| Automatic | Filter (on any shelf, the Library included) |
+|---|---|
+| Reading now | `status = 'reading'`, `started_at` desc |
+| Finished | `status = 'finished'`, `finished_at` desc |
+| Unranked | All-row `score` is null |
+| Unplaced | Library only: on no shelf but the Library |
+| Recent | added to this shelf in the last 60 days |
+| Abandoned | `status = 'abandoned'` |
 
 ## Exact SQL
 
@@ -54,16 +63,22 @@ insert into subshelves (shelf, slug, name, sentence) values
 on conflict (shelf, slug) do update set name = excluded.name, sentence = excluded.sentence;
 ```
 
-Put a book on a shelf, place it on a subshelf (its All row is already there), score it there:
+Put a book on a shelf **with its score**, then place it on a subshelf (one request):
 
 ```sql
-insert into shelf_books (shelf, book_id) values ('money', (select id from books where slug = 'high-output-management'))
-on conflict (shelf, subshelf, book_id) do nothing;
+insert into shelf_books (shelf, book_id, score, score_why, angle) values
+  ('money', (select id from books where slug = 'high-output-management'), 64,
+   'Output thinking applies to cash as much as to people.', 'Read the output and leverage chapters as a budget lens.')
+on conflict (shelf, subshelf, book_id) do update set score = excluded.score, score_why = excluded.score_why, angle = excluded.angle;
 insert into shelf_books (shelf, subshelf, book_id) values ('money', 'mind', (select id from books where slug = 'high-output-management'))
 on conflict (shelf, subshelf, book_id) do nothing;
-update shelf_books set score = 64, score_why = 'Output thinking applies to cash as much as to people.',
-       angle = 'Read the output and leverage chapters as a budget lens.'
- where shelf = 'money' and subshelf = '' and book_id = (select id from books where slug = 'high-output-management');
+```
+
+Score or re-score a book on the Library directly (when you don't use `rank_detail`):
+
+```sql
+update shelf_books set score = 88, score_why = 'The book he quotes most; shaped how he runs 1:1s.'
+ where shelf = 'library' and subshelf = '' and book_id = (select id from books where slug = 'high-output-management');
 ```
 
 Set or change the rule; rename a subshelf (its placements, story and roles follow); move a book off a subshelf only:
@@ -75,7 +90,7 @@ delete from shelf_books where shelf = 'money' and subshelf = 'mindset'
    and book_id = (select id from books where slug = 'high-output-management');
 ```
 
-Read a shelf, its subshelves and what each book is on:
+Read the shelves (Library first), their subshelves and what each book is on, in score order:
 
 ```sql
 select slug, name, blurb, ranking_rule, ranked_at from shelves order by position;
@@ -84,34 +99,25 @@ select sb.shelf, sb.subshelf, b.slug, sb.score, sb.score_by from shelf_books sb 
  order by sb.shelf, sb.subshelf, sb.score desc nulls last;
 ```
 
-The automatic subshelves, on a shelf:
+The automatic subshelves (any shelf; `library` for the Library):
 
 ```sql
 -- Reading now / Finished / Abandoned (swap the status and the date)
 select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
  where sb.shelf = 'money' and sb.subshelf = '' and b.status = 'reading' order by b.started_at desc;
--- Unranked
+-- Unranked: score these now
 select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
- where sb.shelf = 'money' and sb.subshelf = '' and sb.score is null;
+ where sb.shelf = 'library' and sb.subshelf = '' and sb.score is null;
 -- Recent
 select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
  where sb.shelf = 'money' and sb.subshelf = '' and sb.added_at > now() - interval '60 days' order by sb.added_at desc;
-```
-
-And on the Library:
-
-```sql
--- Unranked: unranked on some shelf
+-- Unplaced (Library only): on no shelf but the Library
 select b.slug, b.title from books b
- where exists (select 1 from shelf_books sb where sb.book_id = b.id and sb.subshelf = '' and sb.score is null);
--- Unplaced: on no shelf
-select b.slug, b.title from books b where not exists (select 1 from shelf_books sb where sb.book_id = b.id);
--- Recent
-select slug, title from books where created_at > now() - interval '60 days' order by created_at desc;
+ where not exists (select 1 from shelf_books sb where sb.book_id = b.id and sb.shelf <> 'library');
 ```
 
 Take a book off a shelf (its subshelf rows go too), then delete the subshelf and the shelf (only when the reader
-asks):
+asks; the Library can't be deleted):
 
 ```sql
 delete from shelf_books where shelf = 'money' and subshelf = ''

@@ -36,8 +36,9 @@ Draft their Reading:
   companies." "Cook from home without recipes.") Everything else is written for this.
 - **3–5 shelves** — the areas of their life where reading matters. Name them the way they talk ("Founder",
   "Spanish kitchen", "Raising Lucía"). Never "Books", "Main" or "General". One line each on what belongs there, and a
-  ranking rule: one sentence on what matters on that shelf. A new space has no shelves; you make them
-  ([SHELVES.md](SHELVES.md)).
+  ranking rule: one sentence on what matters on that shelf. A new space has only the Library (every book is on it;
+  [SHELVES.md](SHELVES.md)); you make the rest. Rewrite the Library's rule too, in their words
+  (`update shelves set ranking_rule = … where slug = 'library'`): the ranking below is how it scores.
 - **Subshelves** — the sub-topics they actually care about, inside a shelf. Make one only when a book goes into it; no
   empty ones.
 - **A ranking** — how *they* decide a book matters. 2–6 factors from the catalog, weights summing to 100, named in
@@ -118,7 +119,7 @@ Don't list what's waiting: the site shows it under **Later** and offers things o
 
 ## Exact SQL
 
-Scene 1, one request. A new space has no shelves. `blurb` is the line the site shows under a shelf; `sentence` is the
+Scene 1, one request. A new space has only the Library. `blurb` is the line the site shows under a shelf; `sentence` is the
 same line for other AIs; `ranking_rule` is what matters on it. Write all three.
 
 ```sql

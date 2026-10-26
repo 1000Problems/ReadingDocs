@@ -11,8 +11,9 @@ When a message looks like one of these:
 4. "My template" means the reader's rules: every page of that kind. "This page" means one book or author.
 
 What the reader still does directly on the site (you'll see it in `your_changes`): their notes and highlights,
-reading status, rating, Kindle link and import, drill answers, news read/saved, deletes (with Undo), **Add to…** (putting
-a book on a shelf or subshelf), and dragging a book on a shelf (it writes that score with `score_by = 'you'`).
+reading status, rating, Kindle link and import, drill answers, news read/saved, deletes (with Undo), removing a book
+from a shelf or subshelf, and dragging a book on a shelf (it writes that score with `score_by = 'you'`). The site
+**never adds** a book or puts one on a shelf: every add is a prompt to you, and you score on arrival.
 
 ## Later ([DAILY.md](DAILY.md))
 | The prompt says | You do |
@@ -38,7 +39,9 @@ a book on a shelf or subshelf), and dragging a book on a shelf (it writes that s
 |---|---|
 | "add these N books to my shelf "S" (…): - … - …" | the add flow for each (lookup, note, put on that shelf, score it there), then each book page and the shelf |
 | "add the book "Q" (find the right edition and author)" | find it; if unsure which one, ask with 2–3 options; then add it |
-| "rank "B" on my shelf "S" …" (the book page's **Rank it there**, after Add to…) | the site already put it on the shelf; score it against that shelf's rule among the books already scored there, with `score_why` and `angle`; show where it lands, write on a yes ([RANKING.md](RANKING.md), *Ranking a shelf*) |
+| "put "B" on my shelf "S" … and score it there" (the book page's **Add to…**, bulk *Add to*) | put it on the shelf (and the subshelf, if named) **with its score** in one request, against that shelf's rule among the books already scored there, with `score_why` and `angle`; show where it lands ([RANKING.md](RANKING.md), *Ranking a shelf*) |
+| "add a book for me …" (the header's **+ Add book**) | ask which one; then the add flow (BOOKS.md), scored on arrival |
+| "score "B" on my shelf "S" …" (**Rank it there** on an unranked chip) | score it against that shelf's rule; show where it lands, write on a yes |
 | "make drill cards for "B" …" | drill cards from its page and the reader's notes |
 | "find how "B" connects to the other books and authors …" | [PLAYBOOK.md](PLAYBOOK.md): only connections with sources |
 
@@ -50,7 +53,7 @@ a book on a shelf or subshelf), and dragging a book on a shelf (it writes that s
 | "suggest books for my shelf "S" …" | from their library first, then new ones; add only what they pick |
 | "help me pick my next read (from my shelf "S") …" (an empty **Reading now**) | ask what they're in the mood for, suggest three with a one-line why each, set the chosen one to `status = 'reading'` |
 
-The **Ranking strip** on a shelf's All tab. Each follows [RANKING.md](RANKING.md), *Ranking a shelf*: rule first,
+The **Ranking strip** on a shelf's All tab (the Library has one too: it's a shelf). Each follows [RANKING.md](RANKING.md), *Ranking a shelf*: rule first,
 pairwise against it, never silently over a `score_by = 'you'` score, full list, write on a yes, set `ranked_at`.
 
 | The button | You do |

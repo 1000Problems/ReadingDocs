@@ -60,7 +60,7 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 
 | Page | Shows |
 |---|---|
-| `reading.hadmoney.com/` | the Library: every book in book-score order, shelves, "Last updated by your AI" |
+| `reading.hadmoney.com/` | the Library (a shelf: every book, in Library-score order), its subshelves, "Last updated by your AI" |
 | `/shelves/<slug>` | one shelf: its line (`blurb`), subshelves, books in shelf-score order |
 | `/books/<slug>` | the book page: note, score and why, description, cards |
 | `/authors` and `/authors/<slug>` | the shelf's people and stories; one author's page |
@@ -84,7 +84,7 @@ where it shows:
   `reading.hadmoney.com/shelves/<shelf slug>`. Several books at once: the shelf, or the Library.
 - **A section written or changed:** straight to that section, `/books/<slug>#<section_id>` or
   `/authors/<slug>#<section_id>` (the page jumps there and highlights it).
-- **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; book scores → `/` (the books
+- **Anything else:** the page where it shows. Shelf name or line → `/shelves/<slug>`; Library scores → `/` (the books
   re-sort); a shelf's ranking → `/shelves/<slug>`; author facts → `/authors/<slug>`; new drill cards → `/review`.
 
 Never link to a page where nothing visible changed. `/review` only when new cards are due there; the Library only
