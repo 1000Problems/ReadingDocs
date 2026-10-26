@@ -26,7 +26,10 @@ Read the reader's goal first: `select rules ->> 'note' from rules where kind = '
    of them. A note that would fit anyone is wrong. Personal details only from what they told you or what's in your
    memory of them; if you have none, write to their goal. Never invent a detail to sound personal. Rules: `select rules from rules where kind = 'book_note'` (default 40–90 words, plain prose, no invented
    quotes or facts).
-6. **Status:** `want` (default), `reading`, `finished`, `abandoned`. Dates fill themselves.
+6. **Status** is progress: `want` (up next, the default), `reading`, `finished`. Dates fill themselves. **Set aside** is
+   separate: `set_aside = true` when the reader doesn't want it now ("drop it", "not for me right now"), at any progress:
+   a half-read book stays `reading`. `status = 'abandoned'` is refused. Set-aside books leave the site's recommendations
+   and their Later rows wait until `set_aside = false`.
 7. **Score it, in the same request (required).** Adding = scoring. `rank_detail = '{"scores": {…}}'` with a 1–10
    score for every factor of their ranking: that sets its **Library** score. On each other shelf it's on, a score
    1–100 against that shelf's rule, with one line in `score_why` and an `angle` (how to read it on this shelf), on

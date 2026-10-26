@@ -127,6 +127,14 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
   on the site*).
 - `select * from hints` — suggestions to offer the reader when thresholds are reached.
 
+## Book states
+
+A book's **progress** is `status`: `want` (up next), `reading`, `finished`. **Set aside** is a separate switch
+(`set_aside`), at any progress: the reader doesn't want it now. The site shows states as a filter (*Show*) and on each
+cover, never as subshelves; the three books on top of a shelf are the top 3 by score of what is shown. Every book on a
+shelf is ranked: a placeholder 50 (`score_by = 'default'`) is owed as `rank` until you score it. Details:
+[BOOKS.md](BOOKS.md), [SHELVES.md](SHELVES.md), [RANKING.md](RANKING.md).
+
 ## Later (owed work)
 
 Some work doesn't need to happen while the reader waits: a book's page, an author's news, a subshelf's story, a missing
@@ -143,8 +151,11 @@ write does the work (in the same change, so undo reopens it):
 | `news_why` | `author_news` saved without a why | writing the why |
 | `story` | a subshelf reaches 3 books with no story | writing `shelf_stories` |
 | `rescore` | the ranking's factors change (`apply_existing`) | scoring that book again (a weights-only change re-ranks everything at once; nothing owed) |
+| `rank` | a shelf score is a placeholder (`score_by = 'default'`; subject `book:<slug>`, detail = the shelf). First in line | scoring the book on that shelf |
 | `isbn`, `cover` | a book arrives without one (cover: and `book_facts` has none) | writing the column |
 | `author_page` | **never by itself**: only when the reader says yes | writing its sections (`author_sections`) |
+
+Rows for a **set-aside** book (`books.set_aside`) are hidden from `owed_next` until it's back.
 
 So you **never** insert what that table already owes, and **never** `update owed set state = 'done'`: do the work.
 

@@ -31,21 +31,24 @@ request. A membership still unscored when the request ends fails the whole reque
   or you write it like any other shelf score. A score the reader set is kept when `rank_detail` changes.
 - **Subshelves are placement.** Make them when the reader agrees. A subshelf reaching 3 books with no story puts a
   `story` in Later (subject `subshelf:<shelf>/<subshelf>`; todo key `story:<shelf>:<subshelf>`).
-- **Automatic subshelves** are filters the site shows on every shelf, never rows. Reserved slugs: `all`, `reading`,
-  `finished`, `unranked`, `unplaced`, `recent`, `abandoned`, `library`. The site hides one when it would show the same
-  books as All (Reading now always shows).
+- **Subshelves are areas** (how the reader organizes a shelf), never states. **Book states are a filter**: the site has
+  a *Show* menu (Up next · Reading · Finished · Set aside) over every shelf and subshelf, and each cover shows its state
+  (Reading outlined, Finished ✓, Set aside faded). The hero on top of any shelf is the top 3 by score of what is shown.
+- **Automatic subshelves** left: Unplaced (Library only) and Recent, filters the site shows, never rows. Reserved slugs
+  (so old links resolve): `all`, `reading`, `finished`, `unranked`, `unplaced`, `recent`, `abandoned`, `library`.
 - Hints: `propose_shelves` (10+ books, at most one shelf besides the Library), `propose_subshelves` (10+ books on a
-  shelf, no subshelves), `set_ranking_rule` (5+ books, no rule), `rank_unranked` (books on a shelf with no score: score
-  them). Offer them as `hints` says.
+  shelf, no subshelves), `set_ranking_rule` (5+ books, no rule), `rank_unranked` (books on a shelf with a placeholder score:
+  rank them). Offer them as `hints` says.
 
 | Automatic | Filter (on any shelf, the Library included) |
 |---|---|
-| Reading now | `status = 'reading'`, `started_at` desc |
-| Finished | `status = 'finished'`, `finished_at` desc |
-| Unranked | All-row `score` is null |
 | Unplaced | Library only: on no shelf but the Library |
 | Recent | added to this shelf in the last 60 days |
-| Abandoned | `status = 'abandoned'` |
+
+| Show (filter) | Books |
+|---|---|
+| Up next / Reading / Finished | `status = 'want'` / `'reading'` / `'finished'` |
+| Set aside | `set_aside`; unchecked hides set-aside books at any status |
 
 ## Exact SQL
 
@@ -102,12 +105,13 @@ select sb.shelf, sb.subshelf, b.slug, sb.score, sb.score_by from shelf_books sb 
 The automatic subshelves (any shelf; `library` for the Library):
 
 ```sql
--- Reading now / Finished / Abandoned (swap the status and the date)
+-- What the site's hero shows with Show = Up next + Reading: top 3 by score, set-aside books out
+select b.slug, b.title, sb.score from shelf_books sb join books b on b.id = sb.book_id
+ where sb.shelf = 'money' and sb.subshelf = '' and b.status in ('want', 'reading') and not b.set_aside
+ order by sb.score desc limit 3;
+-- Placeholders: rank these
 select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
- where sb.shelf = 'money' and sb.subshelf = '' and b.status = 'reading' order by b.started_at desc;
--- Unranked: score these now
-select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
- where sb.shelf = 'library' and sb.subshelf = '' and sb.score is null;
+ where sb.shelf = 'library' and sb.subshelf = '' and sb.score_by = 'default';
 -- Recent
 select b.slug, b.title from shelf_books sb join books b on b.id = sb.book_id
  where sb.shelf = 'money' and sb.subshelf = '' and sb.added_at > now() - interval '60 days' order by sb.added_at desc;

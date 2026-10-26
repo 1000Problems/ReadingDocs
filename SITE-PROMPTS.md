@@ -41,7 +41,7 @@ from a shelf or subshelf, and dragging a book on a shelf (it writes that score w
 | "add the book "Q" (find the right edition and author)" | find it; if unsure which one, ask with 2–3 options; then add it |
 | "put "B" on my shelf "S" … and score it there" (the book page's **Add to…**, bulk *Add to*) | put it on the shelf (and the subshelf, if named) **with its score** in one request, against that shelf's rule among the books already scored there, with `score_why` and `angle`; show where it lands ([RANKING.md](RANKING.md), *Ranking a shelf*) |
 | "add a book for me …" (the header's **+ Add book**) | ask which one; then the add flow (BOOKS.md), scored on arrival |
-| "score "B" on my shelf "S" …" (**Rank it there** on an unranked chip) | score it against that shelf's rule; show where it lands, write on a yes |
+| "score "B" on my shelf "S" …" (**Rank it there** on a "needs rank" placeholder) | score it against that shelf's rule; show where it lands, write on a yes |
 | "make drill cards for "B" …" | drill cards from its page and the reader's notes |
 | "find how "B" connects to the other books and authors …" | [PLAYBOOK.md](PLAYBOOK.md): only connections with sources |
 
@@ -51,7 +51,7 @@ from a shelf or subshelf, and dragging a book on a shelf (it writes that score w
 | "create a new shelf: ask me what it's for …" | ask, then name + blurb + ranking rule, suggest books from their library, add only the ones they pick |
 | "help me write what my shelf "S" is for …" | name, blurb, ranking rule; then offer to re-rank |
 | "suggest books for my shelf "S" …" | from their library first, then new ones; add only what they pick |
-| "help me pick my next read (from my shelf "S") …" (an empty **Reading now**) | ask what they're in the mood for, suggest three with a one-line why each, set the chosen one to `status = 'reading'` |
+| "help me pick my next read (from my shelf "S") …" (an empty hero or nothing in progress) | ask what they're in the mood for, suggest three with a one-line why each, set the chosen one to `status = 'reading'` |
 
 The **Ranking strip** on a shelf's All tab (the Library has one too: it's a shelf). Each follows [RANKING.md](RANKING.md), *Ranking a shelf*: rule first,
 pairwise against it, never silently over a `score_by = 'you'` score, full list, write on a yes, set `ranked_at`.

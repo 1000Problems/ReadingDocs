@@ -367,7 +367,7 @@ Facts come from `book_facts` when it has them. Never invent an ISBN, ASIN, year 
 | `title`, `author` | exact; `author` is the full name(s), first author first. Spell each author the same way on every book: the database matches authors by slug (step 5) |
 | `isbn`, `kindle_asin` | from `book_facts`, else from the web, else null |
 | `cover_url` | empty when `book_facts` has a cover (the site shows it); else Open Library now, else empty (README, *Covers and author photos*) |
-| `status` | `want` · `reading` · `finished` · `abandoned` |
+| `status` | `want` · `reading` · `finished` (progress). `set_aside` true/false is separate, at any progress |
 | `tags` | a few lowercase words |
 | `note` | the short note, per `book_note` rules (default 40–90 words, plain prose). Why *this* book for *this* reader, from their goal and what you know of their week. A note that would fit anyone is wrong |
 | `why_read` | the reader's own reason, if they gave one. Don't write it for them |

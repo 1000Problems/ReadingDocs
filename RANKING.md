@@ -68,7 +68,12 @@ a shelf (or the site's *Rank this shelf*):
 6. Show the full list (score, title, one-line why) and wait for a yes.
 7. Write it in one request, and set `shelves.ranked_at = now()`.
 
-"Rank the new ones" is the same for books with a null score only, placed among the existing scores without moving them.
+"Rank the new ones" is the same for books with a **placeholder** score only (`score_by = 'default'`), placed among the
+existing scores without moving them.
+
+**Every book on a shelf has a score.** You score on arrival (BOOKS.md); a score never goes back to null. Books that had
+none before 10-26 got a placeholder 50 with `score_by = 'default'`; each is owed in Later as `rank` (first in line).
+Your real score (or the reader's drag) replaces it and closes the row.
 
 ## Exact SQL
 What's on offer and what's active:
