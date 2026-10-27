@@ -159,7 +159,7 @@ write does the work (in the same change, so undo reopens it):
 | `rescore` | the ranking's factors change (`apply_existing`) | scoring that book again (a weights-only change re-ranks everything at once; nothing owed) |
 | `rank` (derived) | a shelf score is a placeholder (`score_by = 'default'`) on a shelf with a ranking rule. First in line | scoring the book on that shelf |
 | `isbn`, `cover` (derived) | a book has none (cover: and `book_facts` has none either) | writing the column |
-| `author_page` (derived) | the reader has an author page format and an author with 2+ of their books has no page; before that, only when the reader says yes | writing its sections (`author_sections`) |
+| `author_page` (derived) | the reader has an author page format and an author of any book in their library has no page (from the first book); before that, only when the reader says yes | writing its sections (`author_sections`) |
 
 Rows for a **set-aside** book (`books.set_aside`) are hidden from `owed_next` until it's back.
 

@@ -25,7 +25,8 @@ what to say about them in the reader's conversations.
 
 ## The page
 Author pages are owed by themselves only once the reader has an author page format (`templates`, kind `author_page`):
-then every author with 2+ of their books and no page is in Later (derived). Before that, one exists in Later only
+then every author of a book in their library with no page is in Later (derived), from the moment their first book
+lands. Before that, one exists in Later only
 because the reader said yes. A yes for later, or for many ("pages for every author I own 2+ books by"), is one row
 each, then one line (*"12 author pages are in Later."*):
 ```
