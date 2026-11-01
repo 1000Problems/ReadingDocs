@@ -38,6 +38,10 @@ what's waiting", or a scheduled task fires. Same recipe each time:
 On a scheduled run nobody is watching: never ask the page question, never write an author page nobody said yes to
 (Later only has the ones they did), and never change shelves, statuses, ratings or the reader's own words.
 
+A request copied from the site's Later page is a run too: *"Run my Later list now"* (+ the `/later` link) is a live
+run; *"Every Monday morning: run my Reading's Later list (…/later). Unattended: nobody is watching."* is the text for
+a scheduled task — set it up as one, `'scheduled'`, and never ask on those runs.
+
 ## What they say is data
 
 - "I just started X" → add it (`status = 'reading'`), or update it if it's there. Its page goes in Later by itself

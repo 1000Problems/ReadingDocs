@@ -78,6 +78,19 @@ a ranking rule; your real score, or the reader's drag, replaces it. Writing 50 w
 - The top 3 of a shelf on the site are real scores only; placeholders show in the grid with "Needs rank".
 - Equal scores sort newest added first, then by title, everywhere.
 
+## When the reader points at the ranking
+
+`/shelves/<slug>#ranking`: read `ranking_rule`, how many scores are real, placeholders (`default`) and the reader's
+(`you`), and `owed_about('shelf:<slug>#ranking')`. No rule → ask for one first. Otherwise one line + one question:
+*"Money ranks by **changes how I make money**. 5 on the default, 3 scored by you. Change the rule, rank the 5,
+re-rank all, or re-space?"* A new rule is one `ranking_rule` change; then offer the re-rank.
+
+A book link with `Score on Money: 72` under it: argue that book's rank on that shelf against the rule and its
+neighbours; change the score only on a yes, never a `you` score without asking.
+
+**Re-space** (same order, spread over 1–100) is a site button; it's also `select shelf_respace('money')`. Placeholders
+stay 50; `score_by` and `score_why` are kept.
+
 ## Exact SQL
 What's on offer and what's active:
 ```sql

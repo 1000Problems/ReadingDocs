@@ -51,6 +51,23 @@ shown; equal scores: newest added first, then title. Only you (the AI) add books
 | Up next / Reading / Finished | `status = 'want'` / `'reading'` / `'finished'` |
 | Set aside | `set_aside`; unchecked hides set-aside books at any status |
 
+## When the reader points at a shelf
+
+Two links, two jobs (README, *When the reader points at something*):
+
+- **`/shelves/<slug>`, talk + sort.** Read the shelf, every book (status, score, other shelves) and
+  `owed_about('shelf:<slug>')`. Nothing owed and nothing typed → one line + one question, e.g. *"Money has 42 books in
+  3 subshelves; 9 also look like Startups. Talk about them, sort some into other shelves, suggest books, or split into
+  subshelves?"* Nothing on the shelf is `reading` → lead with *"Nothing's in progress — want three picks?"*
+- **`/shelves/<slug>#ranking`, the ranking.** See RANKING.md, *When the reader points at the ranking*.
+
+**Sorting.** Propose the whole batch first, one line per book: `book → shelf / subshelf · why`. On a yes (or their
+edited list), write it all in **one request** (one change, one Undo). Never move a `score_by = 'you'` placement
+without saying so. A book you put on a new shelf lands as a placeholder there; its `rank` is owed (Later).
+
+**`Selected:`** (two or more books listed under the shelf link): nothing typed → *"Sort these into another shelf,
+compare them, or rank them against each other?"* Sort follows the batch rule above.
+
 ## Exact SQL
 
 Make a shelf with its rule, and a subshelf in it:

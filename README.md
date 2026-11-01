@@ -70,10 +70,55 @@ Allowed: `select`, `insert`, `update`, `delete` on the views `/describe` lists. 
 
 An open book or author page refreshes by itself within a few seconds of a change and highlights what changed.
 
-## Prompts from the site
+## When the reader points at something
 
-The site never builds anything itself: every "add a book", "change the look", "rank" or "write the story" control
-copies a prompt for you (putting a book on a shelf, *Add to…*, is a site write). When a message is one of those, do exactly that one thing: [SITE-PROMPTS.md](SITE-PROMPTS.md).
+The site's **Ask your AI** buttons copy a *locator*, not instructions: a name and a link, sometimes one more line.
+
+```
+The Lean Startup by Eric Ries
+https://reading.hadmoney.com/books/the-lean-startup
+```
+
+The reader may also just name it in chat ("the lean startup", "my Money shelf", "Money ranking"). Same procedure.
+
+**0. Find the subject.**
+- **A link:** the path says what it is. `/books/<slug>[#section]` → `book:<slug>`; `/books/<slug>/drill` → `drill:<slug>`;
+  `/authors/<slug>` → `author:<slug>`; `/shelves/<slug>` → `shelf:<slug>` (`#ranking` → `shelf:<slug>#ranking`);
+  `/authors?shelf=<s>&subshelf=<x>` → `subshelf:<s>/<x>`; `/connections/<a>--<b>` → `pair:<a>--<b>`; `/later` → `later`;
+  `/` → the Library (`shelf:library`). A path you don't know: say so and ask what they meant.
+- **A name:** `select * from reading_resolve('lean startup')`. One clear match → use it. Several → list 2–4 with one
+  difference each (author, shelf, year) and ask which. None → "That's not on your Reading. Add it?" (for a shelf: offer
+  the nearest one).
+- Already talking about it ("now rewrite its pitch") → keep the subject; don't resolve again.
+
+**1. Read it live.** Book: the page (`book_sections`), the reader's notes, its shelves and scores. Author: the page,
+their books, news dates. Shelf: `blurb`, `ranking_rule`, subshelves, every book (status, score, `score_by`, other
+shelves). Story, pair + sources, drill cards: those rows.
+
+**2. Ask what's owed:** `select * from owed_about('book:the-lean-startup')`. It includes rows Later hides, with why
+(`hidden`: *set aside*, *no ranking rule*, *commons checked*; `state`: *snoozed*, *failed*, …). Read 1 and 2 together:
+owed alone can make a set-aside book look done.
+If `owed_about` or `reading_resolve` isn't available yet, use `select kind, subject, detail, title from owed_next
+where subject = 'book:<slug>' or detail = '<shelf slug>'` (and match names against `books`, `authors`, `shelves`
+yourself), and say rows for set-aside books or shelves with no rule may be missing.
+
+**3. Then:**
+
+| Situation | You |
+|---|---|
+| The reader typed something | Do that. Live: up to 5 writes, the rest in Later. Mention owed only if it blocks the ask |
+| A `Picked:` or `Selected:` line, nothing typed | Do the pick (a look, a new section; *all my book pages* = a template change). `Selected:` → ask the one question for that place (SHELVES.md). Say how many pages it touches; one change |
+| Nothing typed, something owed | **One line**: what's there + what's owed. **One question.** *"Nothing's written for The Lean Startup yet. Owed: page (6 sections), a real score on Money, Eric Ries's page, a cover. All now (~9 writes) or some?"* |
+| Nothing typed, nothing owed | One line "complete" + one short question with 2–4 options for this place. *"Page and ranks are done. Rewrite a section, ask about the book, change a look, or drill cards?"* |
+| Not connected (no key) | Say so ([Connect](#connect-once)). Never answer as if you'd read the page |
+
+`Score on Money: 72` under a book link means *argue its rank on that shelf* ([RANKING.md](RANKING.md)).
+`Run my Later list now` with `/later` is a run ([DAILY.md](DAILY.md)); the scheduled one says *Unattended*.
+
+**Always:** never overwrite a `score_by = 'you'` score without asking; never write `source = 'me'`; check the preview;
+end with the link to what changed. One confirmed batch = one change, so one Undo.
+
+**Write it next** for a whole page: `select owed_boost_about('book:the-lean-startup')`.
 
 ## A link with every change
 
@@ -121,7 +166,8 @@ directly: `select * from author_articles where author_slug = 'eric-ries'`.
 
 - `select * from rules` — the active rules per kind (book note, ranking, …): the reader's own, or the default.
 - `select * from owed_next order by priority` — what is waiting in **Later** (below). Do it when asked or on a run;
-  don't offer it in chat. (`todo` is the same list with the old item keys.)
+  don't offer it in chat, except as the answer when the reader points at something (*When the reader points at
+  something*, above). `owed_about('<subject>')` is the same list for one thing, hidden rows included. (`todo` is the same list with the old item keys.)
 - `select id, at, what from your_changes where new` — what the reader changed on the site since you last looked
   (notes, status, deletes). Follow up in one line, then mark it seen ([PAGES.md](PAGES.md), *What the reader changed
   on the site*).
@@ -182,7 +228,8 @@ Each insert ends your reply with one line: *"I've put Eric Ries's page in Later.
 
 **No offers in chat.** Never end a reply with "want me to also…?". If the reader asked, do it now. If it's clearly
 wanted but not now, put it in Later and say so in one line. Otherwise say nothing: the site offers things one at a
-time, when the reader is looking at them.
+time, when the reader is looking at them. (Answering a pointed-at thing with what's owed and one question is
+answering, not an offer.)
 
 ## The reader's goal
 
@@ -212,3 +259,12 @@ Not available yet. Docs mark the steps they would change **PROPOSED**. In priori
    - a documented size limit for one `POST /sql` body, so imports know their batch size;
    - site speed checked at 2,000+ books: Library, shelf page, search.
 8. The connect prompt says "read the README and read by job" instead of naming docs, so it never goes stale.
+
+## Exact SQL
+
+```sql
+select * from reading_resolve('the lean startup');
+select kind, subject, detail, state, hidden from owed_about('book:the-lean-startup');
+select kind, subject, detail, state, hidden from owed_about('shelf:library#ranking');
+select kind, subject from owed_about('later');
+```

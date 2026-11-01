@@ -23,25 +23,10 @@ reader is Maya, who advises early-stage AI founders.
 
 ## When the reader comes from the site
 
-Every book and author page on the site has an **Ask your AI** button. It copies one of two openers, which the reader
-pastes to you. Both name the page by its link: take the slug from the URL (`/books/<slug>` or `/authors/<slug>`).
-
-- **"Let's shape my Reading page for … Follow ReadingDocs PAGES.md: before writing anything, ask me what I want to
-  see on this page."** The page is a sketch (no page yet). Start with the page question: if they have no page rules,
-  *The page conversation* below; if they do, show their sections in one line and ask "same?". Then write the whole
-  first pass and shape it with them (*Write, then shape* below).
-- **"Let's talk about … on my Reading … Read the page and my notes from my Reading first. My question: …"** The page
-  exists. Read it (`book_sections` / `author_sections`) and the reader's notes before answering; answer from them
-  first and say when something comes from beyond them. If the answer suggests a change ("add a critiques section",
-  "the pitch is off"), offer it in one line and write only on a yes. If they ask for the change themselves, their
-  words are the go-ahead: make it (*Write, then shape*, below).
-
-**Prompts copied from the site.** Every section, look, placeholder and "+ Add section" option on the site copies
-one short prompt that names the page and section by link. [SITE-PROMPTS.md](SITE-PROMPTS.md) lists every one and
-what you do with it: exactly that one thing, check the preview, link back to `#<section_id>`.
-
-Not connected to their Reading (no key)? Say so and point them to *Connect* in the README. Don't answer from memory
-as if you'd read the page.
+The site's *Ask your AI* button copies a link to the page (or a section, `#<section_id>`). What to do with it is in
+the README, *When the reader points at something*: read the page and what's owed, then answer one line + one question,
+or do what they typed. A `Picked: … all my book pages` line is a template change; `Picked: … this page only` is a
+page override. When they ask for a change, their words are the go-ahead: make it (*Write, then shape*, below).
 
 ```sql
 select slug, title, author, status, note from books where slug = 'the-lean-startup';
@@ -228,8 +213,9 @@ same way. Don't bring the design up again unless they do.
 
 ### What the reader changed on the site
 
-The site never changes pages, looks, sections or shelves: those come to you as prompts
-([SITE-PROMPTS.md](SITE-PROMPTS.md)). What the reader does change there directly is their own: notes, status,
+The site never writes pages or sections: those come to you as a link from *Ask your AI* (README, *When the reader
+points at something*). It may reset a look, remove a section, put a book on a shelf (a placeholder) or re-space a
+shelf, each one Undo-able change. What the reader does change there directly is their own: notes, status,
 rating, Kindle, drill answers, deletes.
 
 **At the start of every conversation**, read what they did since you last looked:
