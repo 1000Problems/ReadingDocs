@@ -22,7 +22,7 @@ and author facts work the same way, though ([../COMMONS.md](../COMMONS.md)).
 
 ## Connect (once)
 
-The member gets a connect code from `bookclub.hadmoney.com/club/ai` (6 characters, 10 minutes, one use) and pastes it
+The member gets a connect code from `bookclub.hadmoney.com/account/ai` (6 characters, 10 minutes, one use) and pastes it
 to you with this link.
 
 1. Call:
@@ -34,7 +34,7 @@ to you with this link.
    `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before you write anything.
 2. Every later request: `Authorization: Bearer <key>`.
 3. Run `select * from me` and greet the member by `name`. That first request is what ticks "Your AI says hello" on the site.
-4. If the code is refused or expired, ask the member for a new one from `/club/ai`. Don't retry the old one.
+4. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
 
 ## Work
 
