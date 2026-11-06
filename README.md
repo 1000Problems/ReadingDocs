@@ -10,6 +10,9 @@ are named the way they talk. The first book is one they care about, and its note
 tells them who to know. The ranking is how *they* judge a book. They should think: *how did it know?* It knew because
 you did the work. These docs tell you how.
 
+> **Connected to the Soul Crushers book club** (`bookclub.hadmoney.com`) instead? Stop here and read
+> [bookclub/README.md](bookclub/README.md). Nothing else in this folder applies to you.
+
 This repo is Markdown only. If you are an AI, read [SAFETY.md](SAFETY.md) and this README, then only what your job
 needs:
 
