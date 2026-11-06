@@ -20,21 +20,28 @@ This folder is Markdown only. Read [SAFETY.md](SAFETY.md) and this README first.
 Ignore the Reading docs in the parent folder. Those are for a different site with different tables. The shared book
 and author facts work the same way, though ([../COMMONS.md](../COMMONS.md)).
 
-## Connect (once)
+## Connect (each conversation)
 
 The member gets a connect code from `bookclub.hadmoney.com/account/ai` (6 characters, 10 minutes, one use) and pastes it
-to you with this link.
+to you with this link. A connection lasts for this conversation only. In a new conversation the member gets a new code,
+and the new key replaces the old one.
 
-1. Call:
+1. **Ask first, in one sentence, before you run anything.** Say: *"To connect, I'll send your code to
+   db.byoaistudio.com, where the club's data lives, and get back a read key that stays in this chat. Your computer may ask
+   you to approve that. OK?"* Wait for a yes. The approval prompt is expected; tell the member what it is if they ask.
+2. Call, as a single request with nothing else in the command:
    ```
    curl -s -X POST https://db.byoaistudio.com/connect \
      -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Book Club"}'
    ```
-   Line 1 is your key (`byoai_…`). Keep it where only you can read it, such as your project's memory or instructions. The rest of the response is
-   `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before you write anything.
-2. Every later request: `Authorization: Bearer <key>`.
-3. Run `select * from me` and greet the member by `name`. That first request is what ticks "Your AI says hello" on the site.
-4. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
+   Line 1 is your key (`byoai_…`). **Keep it in this conversation only.** Don't write it to a file, a folder, memory or
+   project instructions, and don't make directories or change permissions to hold it. The rest of the response is
+   `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before you do anything else.
+3. Every later request: `Authorization: Bearer <key>`. Before the first one, tell the member you'll query the club's
+   data at db.byoaistudio.com, so the approval prompts make sense.
+4. Run `select * from me` and greet the member by `name`. That first request is what ticks "Your AI says hello" on the site.
+5. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
+6. If a later request says the key is revoked, the member connected somewhere else or disconnected. Ask for a new code.
 
 ## Work
 
