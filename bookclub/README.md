@@ -4,10 +4,11 @@ The Soul Crushers book club's record lives in one space on BYOAI Studio (`db.byo
 2008, the books, who hosted, every member's score and one word, the ballots, the chat. The site is
 `bookclub.hadmoney.com`. It works fully without you. **Your job is to answer questions about the club's data**
 ("how many nonfiction books did we read this year?", "our top 3 of 2024?", "who's the harshest scorer?") and, when asked,
-write a short write-up or fill in missing book facts.
+update meetings and the five books, write a short write-up or fill in missing book facts.
 
-You borrow one member's access. You see what they can see, and you can never vote, score, RSVP, post or change the
-slate for them.
+You borrow one member's access. You see what they can see and can change what they can change on the site: an admin's
+AI sets hosts, dates and the five books; a host's AI changes their own meeting's time and place and drafts their five.
+You can never vote, score, RSVP or post for them.
 
 This folder is Markdown only. Read [SAFETY.md](SAFETY.md) and this README first. After that, read only what the question needs:
 
@@ -15,6 +16,7 @@ This folder is Markdown only. Read [SAFETY.md](SAFETY.md) and this README first.
 |---|---|
 | Any question about the club's data | [CLUB.md](CLUB.md) (views and columns), [STATS.md](STATS.md) (ready queries) |
 | "Write up the year", "write about this book" | [STATS.md](STATS.md), then *Write-ups* below |
+| "Shelby hosts December on the 20th", "his books are …" | *Meetings and the five books* below |
 | Missing covers, Goodreads scores, fiction/nonfiction | *Owed work* below |
 
 Ignore the Reading docs in the parent folder. Those are for a different site with different tables. The shared book
@@ -71,6 +73,35 @@ Rules for SQL:
    other way to measure it.
 5. Add a link when one helps: `bookclub.hadmoney.com/b/<book slug>` for a book, `/books` for the history.
 6. Don't guess. No rows means no rows. "Scores for that month aren't revealed yet" is a real answer.
+
+## Meetings and the five books
+
+Only when the member asks. **Before you write, say the change back in one line and wait for a yes** ("I'll set December
+2026: host Shelby, Sat Dec 20 at 7pm, and draft these five: … OK?"). Then send it as **one** `/sql` request, so it's one change
+the member can undo. The site shows it as "Updated by <name>'s AI".
+
+- Find people and months first: `select slug, name from members`, `select slug, host, meets_at, status from meetings where slug >= '2026-11'`.
+  Ask when a name or a time is missing or ambiguous. Times are Pacific: write `'2026-12-20 19:00 America/Los_Angeles'`.
+- **A meeting** (admin): create it if `meetings` has no row, then set it:
+  ```sql
+  insert into meetings (slug, month, status) values ('2026-12', '2026-12-01', 'planned') on conflict do nothing;
+  update meetings set host = 'shelby-g', meets_at = '2026-12-20 19:00 America/Los_Angeles' where slug = '2026-12';
+  ```
+  A host may change only `meets_at, venue_label, host_line, food, bring, notes` of their own meeting.
+- **The five books** are the host's slate for their meeting (`at_meeting` = the meeting's slug). Create it, clear it, add
+  the books in order. Reuse a book that exists (`select slug, title from books where title ilike '%…%'`); otherwise add it:
+  ```sql
+  insert into slates (at_meeting) values ('2026-12') on conflict do nothing;
+  delete from candidates where slate = '2026-12';
+  insert into books (slug, title, author) values ('the-dispossessed', 'The Dispossessed', 'Ursula K. Le Guin') on conflict (slug) do nothing;
+  insert into candidates (slate, book, added_at) values ('2026-12', 'the-dispossessed', now());
+  -- … one books + candidates pair per book, added_at a moment later each time so the order holds
+  ```
+  Five at most. A pitch is optional (`pitch`, 280 characters).
+- **Not yours:** posting the five (opening the vote), taking posted five back to drafting, closing and picking. If the five
+  are already posted, Studio refuses; tell the member to do it on the club site's admin page.
+- Read it back (`select * from slate_cards where slate = '2026-12'`, `select * from next_meeting`) and tell the member
+  what changed and that they can undo it.
 
 ## Write-ups
 
