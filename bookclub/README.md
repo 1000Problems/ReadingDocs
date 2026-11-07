@@ -31,20 +31,22 @@ The member gets a connect code from `bookclub.hadmoney.com/account/ai` (6 charac
 to you with this link. A connection lasts for this conversation only. In a new conversation the member gets a new code,
 and the new key replaces the old one.
 
-1. **Ask first, in one sentence, before you run anything.** Say: *"To connect, I'll send your code to
-   db.byoaistudio.com, where the club's data lives, and get back a read key that stays in this chat. Your computer may ask
-   you to approve that. OK?"* Wait for a yes. The approval prompt is expected; tell the member what it is if they ask.
+1. **Connect right away.** The member pasting the code is the request: don't ask "OK?" first. If your app shows its own
+   approval prompt for the network call, that's expected; if the member asks, it's you sending their code to the club's
+   database to get a key.
 2. Call, as a single request with nothing else in the command:
    ```
    curl -s -X POST https://db.byoaistudio.com/connect \
      -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Book Club"}'
    ```
-   Line 1 is your key (`byoai_…`). **Keep it in this conversation only.** Don't write it to a file, a folder, memory or
-   project instructions, and don't make directories or change permissions to hold it. The rest of the response is
-   `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before you do anything else.
-3. Every later request: `Authorization: Bearer <key>`. Before the first one, tell the member you'll query the club's
-   data at db.byoaistudio.com, so the approval prompts make sense.
-4. Run `select * from me` and greet the member by `name`. That first request is what ticks "Your AI says hello" on the site.
+   Line 1 is your key (`byoai_…`). The rest is `/describe`; its first line names the space (`space <handle> · …`).
+   Confirm it's the book club before you do anything else.
+3. **Keep the key in this conversation, where you'll see it on every later turn.** Put it straight into each request's
+   header: `Authorization: Bearer byoai_…`. Many tools (Claude Code, Codex and others) run each command in a fresh shell,
+   so a key kept only in a shell variable or `export` is gone after one command, and so is your connection. Don't write
+   it to a file, a folder, memory or project instructions, and don't make directories or change permissions to hold it.
+4. Run `select * from me` and greet the member by `name`. The site already shows "Your AI said hello" when you used the
+   code, then "connected"; this first read shows as "last used".
 5. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
 6. If a later request says the key is revoked, the member connected somewhere else or disconnected. Ask for a new code.
 
