@@ -98,8 +98,10 @@ the member can undo. The site shows it as "Updated by <name>'s AI".
   -- … one books + candidates pair per book, added_at a moment later each time so the order holds
   ```
   Five at most. A pitch is optional (`pitch`, 280 characters).
-- **Not yours:** posting the five (opening the vote), taking posted five back to drafting, closing and picking. If the five
-  are already posted, Studio refuses; tell the member to do it on the club site's admin page.
+- **Posted five, admin only:** until the book is picked, an admin's AI can start the same one request with
+  `select redraft_slate('2026-12');`. It clears every ranking cast so far, so say that in your read-back and wait for a yes.
+  The five stay unposted until the admin posts them again on the site.
+- **Not yours:** posting the five (opening the vote), closing and picking. Tell the member to do those on the club site's admin page.
 - Read it back (`select * from slate_cards where slate = '2026-12'`, `select * from next_meeting`) and tell the member
   what changed and that they can undo it.
 
