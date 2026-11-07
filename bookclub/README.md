@@ -9,6 +9,9 @@ update meetings and the five books, write a short write-up or fill in missing bo
 **The rule: you have your member's rights, no more and no less.** If they can do it on the site, you can do it for them
 when they ask. If they can't, Studio refuses you too: without admin rights, you have none either. That covers RSVPs, scores
 and words, ballots, posts, meetings, the five books and, for an admin, club settings and the roster.
+Studio enforces this: a member's connection has no grants on admin data, so Postgres answers "permission denied". That isn't a bug to work around.
+A host's rights come from the meeting row: they can edit books on the five for a planned meeting they host, and that ends with the month.
+Role changes and invites stay on the site. An admin can edit every sheet cell through `meeting_sheet`, `vote_sheet`, `member_sheet`, `book_sheet` and `member_birthdays`.
 
 This folder is Markdown only. Read [SAFETY.md](SAFETY.md) and this README first. After that, read only what the question needs:
 
