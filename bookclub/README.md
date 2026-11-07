@@ -28,27 +28,33 @@ and author facts work the same way, though ([../COMMONS.md](../COMMONS.md)).
 ## Connect (each conversation)
 
 The member gets a connect code from `bookclub.hadmoney.com/account/ai` (6 characters, 10 minutes, one use) and pastes it
-to you with this link. A connection lasts for this conversation only. In a new conversation the member gets a new code,
-and the new key replaces the old one.
+to you with this link. A new code replaces the old connection.
 
-1. **Connect right away.** The member pasting the code is the request: don't ask "OK?" first. If your app shows its own
-   approval prompt for the network call, that's expected; if the member asks, it's you sending their code to the club's
-   database to get a key.
-2. Call, as a single request with nothing else in the command:
+Run every command below **on your own computer or sandbox**, not the member's computer, if you have one.
+
+1. **Ask first, in one sentence, then wait for a yes:** *"I'll send your code to db.byoaistudio.com, where the club's data
+   lives, and keep the key it returns in a private file on my side, never in your files or our chat. OK?"*
+2. **Connect and save the key in one command.** It writes the key to a private file and prints only the description,
+   so the key never appears in a command or in the chat:
    ```
-   curl -s -X POST https://db.byoaistudio.com/connect \
-     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Book Club"}'
+   umask 077; mkdir -p ~/.byoai && cd ~/.byoai && curl -s -X POST https://db.byoaistudio.com/connect \
+     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Book Club"}' > reply \
+     && if head -1 reply | grep -q '^byoai_'; then printf 'Authorization: Bearer %s\n' "$(head -1 reply)" > bookclub.header; tail -n +3 reply; else cat reply; fi; rm -f reply
    ```
-   Line 1 is your key (`byoai_…`). The rest is `/describe`; its first line names the space (`space <handle> · …`).
-   Confirm it's the book club before you do anything else.
-3. **Keep the key in this conversation, where you'll see it on every later turn.** Put it straight into each request's
-   header: `Authorization: Bearer byoai_…`. Many tools (Claude Code, Codex and others) run each command in a fresh shell,
-   so a key kept only in a shell variable or `export` is gone after one command, and so is your connection. Don't write
-   it to a file, a folder, memory or project instructions, and don't make directories or change permissions to hold it.
+   The output is `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before
+   you do anything else. If it prints one error line instead, see step 5.
+3. **Every later request sends the key from that file:**
+   ```
+   curl -s -X POST https://db.byoaistudio.com/sql -H @"$HOME/.byoai/bookclub.header" --data-binary 'select * from me'
+   ```
+   Never paste the key into a command, a shell variable, the chat, the member's files or folders, shared memory or project
+   instructions. The file is yours: one file, readable only by you, overwritten by the next code.
+   (`-H @file` needs curl 7.55 or later. On an older curl, use `curl -K` with a config file holding `header = "Authorization: Bearer …"`, also mode 600.)
 4. Run `select * from me` and greet the member by `name`. The site already shows "Your AI said hello" when you used the
    code, then "connected"; this first read shows as "last used".
 5. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
-6. If a later request says the key is revoked, the member connected somewhere else or disconnected. Ask for a new code.
+6. If a request says the key is revoked, or the member says disconnect, delete the file (`rm -f ~/.byoai/bookclub.header`)
+   and ask for a new code if they want to keep going.
 
 ## Work
 

@@ -37,14 +37,17 @@ The reader makes the account themselves, in their browser at https://db.byoaistu
 their password. They give you a short prompt with a connect code (6 characters, 10 minutes, one use). Whatever the
 prompt lists, read this README and read by job (the table above).
 
-1. Call:
+Run these on your own computer or sandbox, not the reader's, if you have one.
+
+1. Connect and save the key in one command. It writes the key to a private file and prints only the description:
    ```
-   curl -s -X POST https://db.byoaistudio.com/connect \
-     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Reading"}'
+   umask 077; mkdir -p ~/.byoai && cd ~/.byoai && curl -s -X POST https://db.byoaistudio.com/connect \
+     -H 'content-type: application/json' -d '{"code":"XXXX-XX","name":"Reading"}' > reply \
+     && if head -1 reply | grep -q '^byoai_'; then printf 'Authorization: Bearer %s\n' "$(head -1 reply)" > reading.header; tail -n +3 reply; else cat reply; fi; rm -f reply
    ```
-   Line 1 is your key (`byoai_…`). Keep it where only you can read it. The rest is `/describe`; its first line names
-   the space (`space <handle> · …`). Tell the reader the handle before you write anything.
-2. Every later request: `Authorization: Bearer <key>`.
+   The first line of the output names the space (`space <handle> · …`). Tell the reader the handle before you write anything.
+2. Every later request: `curl -s -X POST https://db.byoaistudio.com/sql -H @"$HOME/.byoai/reading.header" --data-binary '…'`.
+   Never paste the key into a command, the chat, or the reader's files.
 3. Code refused or expired → ask the reader for a new one on db.byoaistudio.com. Don't retry the old one.
 4. Then go to [START.md](START.md). Don't add anything before the reader has seen your plan.
 
