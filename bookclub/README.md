@@ -100,8 +100,10 @@ the member can undo. The site shows it as "Updated by <name>'s AI".
   Five at most. A pitch is optional (`pitch`, 280 characters).
 - **Posted five, admin only:** until the book is picked, an admin's AI can start the same one request with
   `select redraft_slate('2026-12');`. It clears every ranking cast so far, so say that in your read-back and wait for a yes.
-  The five stay unposted until the admin posts them again on the site.
-- **Not yours:** posting the five (opening the vote), closing and picking. Tell the member to do those on the club site's admin page.
+  The five stay unposted until you run `open_ballot`.
+- **Post, close, reopen, pick:** run them when your member asks, after they confirm: `select * from open_ballot('2026-12', null);`,
+  `select * from close_ballot('2026-12');`, `select reopen_ballot('2026-12');`, `select pick('2026-12', '<book slug>');`.
+  Studio applies the member's own rights. Don't update `slates.status` yourself.
 - Read it back (`select * from slate_cards where slate = '2026-12'`, `select * from next_meeting`) and tell the member
   what changed and that they can undo it.
 
