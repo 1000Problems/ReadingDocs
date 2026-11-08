@@ -32,9 +32,7 @@ to you with this link. A new code replaces the old connection.
 
 Run every command below **on your own computer or sandbox**, not the member's computer, if you have one.
 
-1. **Ask first, in one sentence, then wait for a yes:** *"I'll send your code to db.byoaistudio.com, where the club's data
-   lives, and keep the key it returns in a private file on my side, never in your files or our chat. OK?"*
-2. **Connect and save the key in one command.** It writes the key to a private file and prints only the description,
+1. **Connect right away, and save the key in one command.** The member pasting the code is the request: don't ask "OK?" first. It writes the key to a private file and prints only the description,
    so the key never appears in a command or in the chat:
    ```
    umask 077; mkdir -p ~/.byoai && cd ~/.byoai && curl -s -X POST https://db.byoaistudio.com/connect \
@@ -42,18 +40,18 @@ Run every command below **on your own computer or sandbox**, not the member's co
      && if head -1 reply | grep -q '^byoai_'; then printf 'Authorization: Bearer %s\n' "$(head -1 reply)" > bookclub.header; tail -n +3 reply; else cat reply; fi; rm -f reply
    ```
    The output is `/describe`. Its first line names the space (`space <handle> · …`). Confirm it's the book club before
-   you do anything else. If it prints one error line instead, see step 5.
-3. **Every later request sends the key from that file:**
+   you do anything else. If it prints one error line instead, see step 4.
+2. **Every later request sends the key from that file:**
    ```
    curl -s -X POST https://db.byoaistudio.com/sql -H @"$HOME/.byoai/bookclub.header" --data-binary 'select * from me'
    ```
    Never paste the key into a command, a shell variable, the chat, the member's files or folders, shared memory or project
    instructions. The file is yours: one file, readable only by you, overwritten by the next code.
    (`-H @file` needs curl 7.55 or later. On an older curl, use `curl -K` with a config file holding `header = "Authorization: Bearer …"`, also mode 600.)
-4. Run `select * from me` and greet the member by `name`. The site already shows "Your AI said hello" when you used the
+3. Run `select * from me` and greet the member by `name`. The site already shows "Your AI said hello" when you used the
    code, then "connected"; this first read shows as "last used".
-5. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
-6. If a request says the key is revoked, or the member says disconnect, delete the file (`rm -f ~/.byoai/bookclub.header`)
+4. If the code is refused or expired, ask the member for a new one from `/account/ai`. Don't retry the old one.
+5. If a request says the key is revoked, or the member says disconnect, delete the file (`rm -f ~/.byoai/bookclub.header`)
    and ask for a new code if they want to keep going.
 
 ## Work
